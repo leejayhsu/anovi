@@ -4,6 +4,7 @@
 	import {
 		celsiusToFahrenheit,
 		fahrenheitToCelsius,
+		generateUUID,
 		type StartCookV1Stage,
 		type StartCookV2Stage
 	} from '$lib/anova.js';
@@ -83,7 +84,7 @@
 
 	// Multi-stage cooking
 	let multiStageEnabled = $state(false);
-	let stages = $state<Array<{ id: string; title: string }>>([{ id: crypto.randomUUID(), title: 'Stage 1' }]);
+	let stages = $state<Array<{ id: string; title: string }>>([{ id: generateUUID(), title: 'Stage 1' }]);
 
 	// Computed values
 	let temperatureFahrenheit = $derived(celsiusToFahrenheit(temperatureCelsius));
@@ -110,7 +111,7 @@
 		if (deviceVersion === 'v1') {
 			return {
 				stepType: 'stage',
-				id: crypto.randomUUID(),
+				id: generateUUID(),
 				title: '',
 				description: '',
 				type: 'cook',
@@ -169,7 +170,7 @@
 			} as StartCookV1Stage;
 		} else {
 			return {
-				id: crypto.randomUUID(),
+				id: generateUUID(),
 				do: {
 					type: 'cook',
 					fan: { speed: fanSpeed },

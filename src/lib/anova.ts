@@ -2,16 +2,14 @@
 // These functions create command payloads for the WebSocket API
 // Token authentication is handled server-side via db.server.ts
 
+import { v4 as uuidv4 } from 'uuid';
+
 // Device ID (will be obtained from device discovery)
 export let deviceId: string = '';
 
-// Generate UUID v4
-function generateUUID(): string {
-	return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, (c) => {
-		const r = (Math.random() * 16) | 0;
-		const v = c === 'x' ? r : (r & 0x3) | 0x8;
-		return v.toString(16);
-	});
+// Generate UUID v4 - uses uuid library which works in both browser and Node.js
+export function generateUUID(): string {
+	return uuidv4();
 }
 
 // Convert Celsius to Fahrenheit
