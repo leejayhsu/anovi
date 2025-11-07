@@ -3,9 +3,11 @@
 	import { invalidateAll } from '$app/navigation';
 	import {
 		celsiusToFahrenheit,
+		fahrenheitToCelsius,
 		type StartCookV1Stage,
 		type StartCookV2Stage
 	} from '$lib/anova.js';
+	import Dialpad from '$lib/components/Dialpad.svelte';
 
 	let { data } = $props();
 
@@ -38,7 +40,7 @@
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
 	let temperatureCelsius = $state(180);
-	let temperatureUnit = $state<'C' | 'F'>('C');
+	let temperatureUnit = $state<'C' | 'F'>('F');
 
 	// Heating elements
 	let topElement = $state(false);
@@ -80,6 +82,9 @@
 	let tokenInput = $state('');
 	let showTokenForm = $state(!data.tokenStatus.hasToken);
 	let refreshingDevices = $state(false);
+	
+	// Modal and dialpad state
+	let showTemperatureDialpad = $state(false);
 
 	// Build stage data for form submission
 	function buildStageData(): StartCookV1Stage | StartCookV2Stage {
@@ -213,6 +218,66 @@
 		}
 		return true;
 	}
+
+	// Handle temperature input from dialpad
+	function handleTemperatureChange(value: number) {
+		// Convert if needed based on current unit
+		if (temperatureUnit === 'F') {
+			// User entered Fahrenheit, convert to Celsius
+			temperatureCelsius = fahrenheitToCelsius(value);
+		} else {
+			// User entered Celsius
+			temperatureCelsius = value;
+		}
+	}
+
+	// Handle temperature unit change - automatically set on device
+	async function handleUnitChange(newUnit: 'C' | 'F') {
+		temperatureUnit = newUnit;
+		
+		// Automatically set the unit on the device if device is selected
+		if (deviceId) {
+			try {
+				const formData = new FormData();
+				formData.append('deviceId', deviceId);
+				formData.append('unit', newUnit);
+				
+				const response = await fetch('?/setTemperatureUnit', {
+					method: 'POST',
+					body: formData
+				});
+				
+				if (response.ok) {
+					const result = await response.json();
+					if (result.type === 'success' && result.data) {
+						lastResult = result.data as { success: boolean; error?: string };
+					} else if (result.type === 'failure' && result.data) {
+						lastResult = result.data as { success: boolean; error?: string };
+					}
+				}
+			} catch (error) {
+				console.error('Error setting temperature unit:', error);
+				lastResult = { success: false, error: 'Failed to set temperature unit' };
+			}
+		}
+	}
+
+	// Get temperature display value for dialpad
+	let dialpadTemperature = $derived(
+		temperatureUnit === 'C' ? temperatureCelsius : temperatureFahrenheit
+	);
+
+	// Get temperature min/max for dialpad
+	let dialpadMin = $derived(
+		temperatureUnit === 'C'
+			? (temperatureMode === 'wet' ? 25 : 25)
+			: (temperatureMode === 'wet' ? 75 : 75)
+	);
+	let dialpadMax = $derived(
+		temperatureUnit === 'C'
+			? (temperatureMode === 'wet' ? 100 : 250)
+			: (temperatureMode === 'wet' ? 212 : 482)
+	);
 </script>
 
 <svelte:head>
@@ -345,56 +410,77 @@
 		<section class="card">
 			<h2>Temperature Control</h2>
 			<div class="form-group">
-				<label for="temp-mode">Mode</label>
-				<select id="temp-mode" bind:value={temperatureMode}>
-					<option value="dry">Dry</option>
-					<option value="wet">Wet</option>
-				</select>
+				<label>Mode</label>
+				<div class="toggle-group">
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={temperatureMode === 'dry'}
+						onclick={() => (temperatureMode = 'dry')}
+					>
+						Dry
+					</button>
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={temperatureMode === 'wet'}
+						onclick={() => (temperatureMode = 'wet')}
+					>
+						Wet
+					</button>
+				</div>
 			</div>
 			<div class="form-group">
-				<label for="temp-unit">Temperature Unit</label>
-				<select id="temp-unit" bind:value={temperatureUnit}>
-					<option value="C">Celsius</option>
-					<option value="F">Fahrenheit</option>
-				</select>
+				<label>Temperature Unit</label>
+				<div class="toggle-group">
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={temperatureUnit === 'C'}
+						onclick={() => handleUnitChange('C')}
+					>
+						Celsius
+					</button>
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={temperatureUnit === 'F'}
+						onclick={() => handleUnitChange('F')}
+					>
+						Fahrenheit
+					</button>
+				</div>
 			</div>
 			<div class="form-group">
-				<label for="temperature">
-					Temperature ({temperatureUnit === 'C' ? '°C' : '°F'})
-				</label>
-				<input
-					id="temperature"
-					type="number"
-					bind:value={temperatureCelsius}
-					min={temperatureMode === 'wet' ? 25 : 25}
-					max={temperatureMode === 'wet' ? 100 : 250}
-					step="1"
-				/>
+				<label>Temperature</label>
+				<button
+					type="button"
+					class="temperature-button"
+					onclick={() => (showTemperatureDialpad = true)}
+				>
+					<span class="temperature-value">{displayTemperature}</span>
+					<span class="temperature-unit">{temperatureUnit === 'C' ? '°C' : '°F'}</span>
+				</button>
 				<span class="helper-text">
 					{temperatureMode === 'wet'
-						? 'Range: 25-100°C (75-212°F)'
-						: 'Range: 25-250°C (75-482°F)'}
+						? (temperatureUnit === 'C' ? 'Range: 25-100°C' : 'Range: 75-212°F')
+						: (temperatureUnit === 'C' ? 'Range: 25-250°C' : 'Range: 75-482°F')}
 				</span>
 			</div>
-			<form
-				method="POST"
-				action="?/setTemperatureUnit"
-				use:enhance={() => {
-					return async ({ result, update }) => {
-						await update();
-						if (result.type === 'success' && result.data) {
-							lastResult = result.data as { success: boolean; error?: string };
-						}
-					};
-				}}
-			>
-				<input type="hidden" name="deviceId" value={deviceId} />
-				<input type="hidden" name="unit" value={temperatureUnit} />
-				<div class="form-group">
-					<button type="submit">Set Temperature Unit</button>
-				</div>
-			</form>
 		</section>
+
+		<!-- Modals and Dialpad -->
+		{#if showTemperatureDialpad}
+			<Dialpad
+				value={dialpadTemperature}
+				min={dialpadMin}
+				max={dialpadMax}
+				unit={temperatureUnit === 'C' ? '°C' : '°F'}
+				onChange={handleTemperatureChange}
+				onClose={() => (showTemperatureDialpad = false)}
+			/>
+		{/if}
+
 
 		<!-- Heating Elements -->
 		<section class="card">
@@ -706,6 +792,106 @@
 
 	.form-group input[type='checkbox'] {
 		margin-right: 0.5rem;
+	}
+
+	.select-button {
+		width: 100%;
+		padding: 1rem;
+		border: 2px solid #ddd;
+		border-radius: 8px;
+		background: white;
+		color: #333;
+		font-size: 1rem;
+		cursor: pointer;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		transition: all 0.2s;
+		touch-action: manipulation;
+		min-height: 56px;
+	}
+
+	.select-button:active {
+		background: #f0f0f0;
+		border-color: #007bff;
+		transform: scale(0.98);
+	}
+
+	.chevron {
+		color: #666;
+		font-size: 0.875rem;
+	}
+
+	.toggle-group {
+		display: flex;
+		gap: 0.75rem;
+		width: 100%;
+	}
+
+	.toggle-button {
+		flex: 1;
+		padding: 1rem;
+		border: 2px solid #ddd;
+		border-radius: 8px;
+		background: white;
+		color: #333;
+		font-size: 1rem;
+		font-weight: 500;
+		cursor: pointer;
+		transition: all 0.2s;
+		touch-action: manipulation;
+		min-height: 56px;
+	}
+
+	.toggle-button:active {
+		transform: scale(0.98);
+	}
+
+	.toggle-button.active {
+		background: #007bff;
+		color: white;
+		border-color: #007bff;
+		box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+	}
+
+	.toggle-button:not(.active):hover {
+		background: #f8f9fa;
+		border-color: #007bff;
+	}
+
+	.temperature-button {
+		width: 100%;
+		padding: 1.5rem;
+		border: 2px solid #007bff;
+		border-radius: 12px;
+		background: linear-gradient(135deg, #007bff 0%, #0056b3 100%);
+		color: white;
+		font-size: 1.5rem;
+		font-weight: 600;
+		cursor: pointer;
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.5rem;
+		transition: all 0.2s;
+		touch-action: manipulation;
+		min-height: 80px;
+		box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+	}
+
+	.temperature-button:active {
+		transform: scale(0.98);
+		box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+	}
+
+	.temperature-value {
+		font-size: 2.5rem;
+		font-weight: 700;
+	}
+
+	.temperature-unit {
+		font-size: 1.5rem;
+		opacity: 0.9;
 	}
 
 	.helper-text {
