@@ -8,19 +8,31 @@
 		type StartCookV2Stage
 	} from '$lib/anova.js';
 	import Dialpad from '$lib/components/Dialpad.svelte';
+	import TimeSelector from '$lib/components/TimeSelector.svelte';
+	import { deviceConfig } from '$lib/stores/device.js';
 
 	let { data } = $props();
 
-	// Device configuration
+	// Device configuration from store
 	let deviceId = $state('');
 	let deviceVersion = $state<'v1' | 'v2'>('v2');
-	
+
+	// Sync with store
+	$effect(() => {
+		const unsubscribe = deviceConfig.subscribe((config) => {
+			deviceId = config.deviceId;
+			deviceVersion = config.deviceVersion;
+		});
+		return unsubscribe;
+	});
+
 	// Auto-select device version based on discovered devices
 	$effect(() => {
 		if (data.discoveredDevices && data.discoveredDevices.length > 0 && !deviceId) {
 			const firstDevice = data.discoveredDevices[0];
 			deviceId = firstDevice.cookerId;
 			deviceVersion = firstDevice.type === 'oven_v1' ? 'v1' : 'v2';
+			deviceConfig.set({ deviceId, deviceVersion });
 		}
 	});
 
@@ -32,6 +44,7 @@
 				const version = selectedDevice.type === 'oven_v1' ? 'v1' : 'v2';
 				if (deviceVersion !== version) {
 					deviceVersion = version;
+					deviceConfig.set({ deviceId, deviceVersion });
 				}
 			}
 		}
@@ -43,9 +56,9 @@
 	let temperatureUnit = $state<'C' | 'F'>('F');
 
 	// Heating elements
-	let topElement = $state(false);
+	let topElement = $state(true);
 	let bottomElement = $state(false);
-	let rearElement = $state(true);
+	let rearElement = $state(false);
 
 	// Fan and vent
 	let fanSpeed = $state(100);
@@ -63,6 +76,7 @@
 	// Probe settings
 	let probeEnabled = $state(false);
 	let probeSetpointCelsius = $state(65);
+	let probeTemperatureUnit = $state<'C' | 'F'>('F');
 
 	// Rack position
 	let rackPosition = $state(3);
@@ -76,15 +90,20 @@
 	let displayTemperature = $derived(
 		temperatureUnit === 'C' ? temperatureCelsius : temperatureFahrenheit
 	);
+	let hasActiveHeatingElement = $derived(topElement || bottomElement || rearElement);
+	let probeSetpointFahrenheit = $derived(celsiusToFahrenheit(probeSetpointCelsius));
+	let displayProbeTemperature = $derived(
+		probeTemperatureUnit === 'C' ? probeSetpointCelsius : probeSetpointFahrenheit
+	);
 
 	// UI state
 	let lastResult = $state<{ success: boolean; error?: string } | null>(null);
-	let tokenInput = $state('');
-	let showTokenForm = $state(!data.tokenStatus.hasToken);
-	let refreshingDevices = $state(false);
+	let showExtraSettings = $state(false);
 	
 	// Modal and dialpad state
 	let showTemperatureDialpad = $state(false);
+	let showTimerSelector = $state(false);
+	let showProbeDialpad = $state(false);
 
 	// Build stage data for form submission
 	function buildStageData(): StartCookV1Stage | StartCookV2Stage {
@@ -197,26 +216,97 @@
 		}
 	}
 
-	// Format time
+	// Format time - always show hours:minutes:seconds format
 	function formatTime(seconds: number): string {
 		const hours = Math.floor(seconds / 3600);
 		const minutes = Math.floor((seconds % 3600) / 60);
 		const secs = seconds % 60;
-		if (hours > 0) {
-			return `${hours}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
-		}
-		return `${minutes}:${secs.toString().padStart(2, '0')}`;
+		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
 	}
 
-	// Validate heating elements (all can't be on/off at the same time)
-	function validateHeatingElements() {
-		const allOn = topElement && bottomElement && rearElement;
-		const allOff = !topElement && !bottomElement && !rearElement;
-		if (allOn || allOff) {
-			alert('All heating elements cannot be on or off at the same time');
-			return false;
+	// Handle heating element toggle - prevent turning off the last active element
+	function toggleHeatingElement(element: 'top' | 'bottom' | 'rear') {
+		const currentState = {
+			top: topElement,
+			bottom: bottomElement,
+			rear: rearElement
+		};
+		
+		// Calculate what the new state would be
+		const newState = { ...currentState };
+		newState[element] = !currentState[element];
+		
+		// Check if at least one would still be active
+		const wouldHaveActive = newState.top || newState.bottom || newState.rear;
+		
+		if (!wouldHaveActive) {
+			// Don't allow turning off the last active element
+			return;
 		}
-		return true;
+		
+		// Apply the change
+		if (element === 'top') topElement = !topElement;
+		if (element === 'bottom') bottomElement = !bottomElement;
+		if (element === 'rear') rearElement = !rearElement;
+	}
+
+	// Handle probe temperature input from dialpad
+	function handleProbeTemperatureChange(value: number) {
+		// Convert if needed based on current unit
+		if (probeTemperatureUnit === 'F') {
+			// User entered Fahrenheit, convert to Celsius
+			probeSetpointCelsius = fahrenheitToCelsius(value);
+		} else {
+			// User entered Celsius
+			probeSetpointCelsius = value;
+		}
+	}
+
+	// Automatically set probe when enabled or temperature changes
+	$effect(() => {
+		if (probeEnabled && deviceId && probeSetpointCelsius) {
+			// Debounce the API call to avoid too many requests
+			const timeoutId = setTimeout(async () => {
+				try {
+					const formData = new FormData();
+					formData.append('deviceId', deviceId);
+					formData.append('setpointCelsius', probeSetpointCelsius.toString());
+					formData.append('deviceVersion', deviceVersion);
+					
+					const response = await fetch('?/setProbe', {
+						method: 'POST',
+						body: formData
+					});
+					
+					if (response.ok) {
+						const result = await response.json();
+						if (result.type === 'success' && result.data) {
+							lastResult = result.data as { success: boolean; error?: string };
+						} else if (result.type === 'failure' && result.data) {
+							lastResult = result.data as { success: boolean; error?: string };
+						}
+					}
+				} catch (error) {
+					console.error('Error setting probe:', error);
+					lastResult = { success: false, error: 'Failed to set probe' };
+				}
+			}, 500); // 500ms debounce
+			
+			return () => clearTimeout(timeoutId);
+		}
+	});
+
+	// Get probe temperature min/max for dialpad
+	let probeDialpadMin = $derived(
+		probeTemperatureUnit === 'C' ? 1 : 33
+	);
+	let probeDialpadMax = $derived(
+		probeTemperatureUnit === 'C' ? 100 : 212
+	);
+
+	// Handle timer duration change from time selector
+	function handleTimerChange(value: number) {
+		timerSeconds = value;
 	}
 
 	// Handle temperature input from dialpad
@@ -285,127 +375,7 @@
 </svelte:head>
 
 <div class="container">
-	<header>
-		<h1>Anova Precision Oven Remote Control</h1>
-		<div class="connection-status">
-			<span class="status-indicator" class:connected={data.tokenStatus.hasToken}></span>
-			<span>{data.tokenStatus.hasToken ? 'Token Configured' : 'No Token'}</span>
-		</div>
-	</header>
-
 	<div class="main-content">
-		<!-- Token Configuration -->
-		{#if showTokenForm || !data.tokenStatus.hasToken}
-			<section class="card token-config">
-				<h2>Configure Anova Token</h2>
-				<form
-					method="POST"
-					action="?/setToken"
-					use:enhance={() => {
-						return async ({ result, update }) => {
-							await update();
-							if (result.type === 'success' && result.data?.success) {
-								showTokenForm = false;
-								await invalidateAll();
-							}
-						};
-					}}
-				>
-					<div class="form-group">
-						<label for="token">Personal Access Token</label>
-						<input
-							id="token"
-							name="token"
-							type="password"
-							bind:value={tokenInput}
-							placeholder="Enter your Anova personal access token"
-							required
-						/>
-					</div>
-					<div class="form-group">
-						<button type="submit">Save Token</button>
-					</div>
-				</form>
-			</section>
-		{:else}
-			<section class="card token-config">
-				<h2>Token Configuration</h2>
-				<p>Token is configured ✓</p>
-				<button type="button" onclick={() => (showTokenForm = true)}>
-					Update Token
-				</button>
-			</section>
-		{/if}
-
-		<!-- Device Configuration -->
-		<section class="card">
-			<h2>Device Configuration</h2>
-			{#if data.tokenStatus.hasToken}
-				<div class="form-group">
-					<form
-						method="POST"
-						action="?/refreshDevices"
-						use:enhance={() => {
-							return async ({ result, update }) => {
-								refreshingDevices = true;
-								await update();
-								refreshingDevices = false;
-								if (result.type === 'success' && result.data) {
-									await invalidateAll();
-									if (result.data.success) {
-										lastResult = { success: true };
-									} else {
-										lastResult = result.data as { success: boolean; error?: string };
-									}
-								}
-							};
-						}}
-					>
-						<button type="submit" disabled={refreshingDevices} class="btn-secondary">
-							{refreshingDevices ? 'Refreshing...' : 'Refresh Devices'}
-						</button>
-					</form>
-				</div>
-			{/if}
-			{#if data.discoveredDevices && data.discoveredDevices.length > 0}
-				<div class="form-group">
-					<label for="device-select">Select Device</label>
-					<select
-						id="device-select"
-						bind:value={deviceId}
-					>
-						<option value="">-- Select a device --</option>
-						{#each data.discoveredDevices as device}
-							<option value={device.cookerId}>
-								{device.name} ({device.type === 'oven_v1' ? 'v1' : 'v2'})
-							</option>
-						{/each}
-					</select>
-				</div>
-			{/if}
-			<div class="form-group">
-				<label for="device-id">Device ID</label>
-				<input
-					id="device-id"
-					type="text"
-					bind:value={deviceId}
-					placeholder="Enter device ID or select from discovered devices"
-				/>
-			</div>
-			<div class="form-group">
-				<label for="device-version">Device Version</label>
-				<select id="device-version" bind:value={deviceVersion}>
-					<option value="v1">Oven v1</option>
-					<option value="v2">Oven v2</option>
-				</select>
-			</div>
-			{#if data.discoveredDevices && data.discoveredDevices.length === 0 && data.tokenStatus.hasToken}
-				<p class="helper-text">
-					No devices discovered yet. Make sure your oven is powered on and connected to Wi-Fi. Click "Refresh Devices" to search again.
-				</p>
-			{/if}
-		</section>
-
 		<!-- Temperature Control -->
 		<section class="card">
 			<h2>Temperature Control</h2>
@@ -481,52 +451,62 @@
 			/>
 		{/if}
 
+		{#if showTimerSelector}
+			<TimeSelector
+				value={timerSeconds}
+				onChange={handleTimerChange}
+				onClose={() => (showTimerSelector = false)}
+			/>
+		{/if}
+
+		{#if showProbeDialpad}
+			<Dialpad
+				value={displayProbeTemperature}
+				min={probeDialpadMin}
+				max={probeDialpadMax}
+				unit={probeTemperatureUnit === 'C' ? '°C' : '°F'}
+				onChange={handleProbeTemperatureChange}
+				onClose={() => (showProbeDialpad = false)}
+			/>
+		{/if}
+
 
 		<!-- Heating Elements -->
 		<section class="card">
 			<h2>Heating Elements</h2>
 			<div class="form-group">
-				<label>
-					<input type="checkbox" bind:checked={topElement} />
-					Top Element
-				</label>
-			</div>
-			<div class="form-group">
-				<label>
-					<input type="checkbox" bind:checked={bottomElement} />
-					Bottom Element
-				</label>
-			</div>
-			<div class="form-group">
-				<label>
-					<input type="checkbox" bind:checked={rearElement} />
-					Rear Element
-				</label>
-			</div>
-			<p class="helper-text">
-				Note: All three elements cannot be on or off at the same time
-			</p>
-		</section>
-
-		<!-- Fan & Vent -->
-		<section class="card">
-			<h2>Fan & Vent</h2>
-			<div class="form-group">
-				<label for="fan-speed">Fan Speed (%)</label>
-				<input
-					id="fan-speed"
-					type="range"
-					min="0"
-					max="100"
-					bind:value={fanSpeed}
-				/>
-				<span>{fanSpeed}%</span>
-			</div>
-			<div class="form-group">
-				<label>
-					<input type="checkbox" bind:checked={ventOpen} />
-					Vent Open
-				</label>
+				<label>Select Heating Elements</label>
+				<div class="toggle-group toggle-group-vertical">
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={topElement}
+						onclick={() => toggleHeatingElement('top')}
+					>
+						Top Element
+					</button>
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={bottomElement}
+						onclick={() => toggleHeatingElement('bottom')}
+					>
+						Bottom Element
+					</button>
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={rearElement}
+						onclick={() => toggleHeatingElement('rear')}
+					>
+						Rear Element
+					</button>
+				</div>
+				{#if !hasActiveHeatingElement}
+					<p class="helper-text error-text">
+						⚠️ At least one heating element must be active
+					</p>
+				{/if}
 			</div>
 		</section>
 
@@ -534,12 +514,33 @@
 		<section class="card">
 			<h2>Steam Control</h2>
 			<div class="form-group">
-				<label for="steam-mode">Steam Mode</label>
-				<select id="steam-mode" bind:value={steamMode}>
-					<option value="idle">Idle</option>
-					<option value="relative-humidity">Relative Humidity</option>
-					<option value="steam-percentage">Steam Percentage</option>
-				</select>
+				<label>Steam Mode</label>
+				<div class="toggle-group toggle-group-vertical">
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={steamMode === 'idle'}
+						onclick={() => (steamMode = 'idle')}
+					>
+						Idle
+					</button>
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={steamMode === 'relative-humidity'}
+						onclick={() => (steamMode = 'relative-humidity')}
+					>
+						Relative Humidity
+					</button>
+					<button
+						type="button"
+						class="toggle-button"
+						class:active={steamMode === 'steam-percentage'}
+						onclick={() => (steamMode = 'steam-percentage')}
+					>
+						Steam Percentage
+					</button>
+				</div>
 			</div>
 			{#if steamMode !== 'idle'}
 				<div class="form-group">
@@ -562,30 +563,54 @@
 		<section class="card">
 			<h2>Timer</h2>
 			<div class="form-group">
-				<label>
-					<input type="checkbox" bind:checked={timerEnabled} />
+				<button
+					type="button"
+					class="toggle-button toggle-button-large"
+					class:active={timerEnabled}
+					onclick={() => (timerEnabled = !timerEnabled)}
+				>
 					Enable Timer
-				</label>
+				</button>
 			</div>
 			{#if timerEnabled}
 				<div class="form-group">
-					<label for="timer-seconds">Duration (seconds)</label>
-					<input
-						id="timer-seconds"
-						type="number"
-						bind:value={timerSeconds}
-						min="0"
-						step="1"
-					/>
-					<span class="helper-text">{formatTime(timerSeconds)}</span>
+					<label>Duration</label>
+					<button
+						type="button"
+						class="temperature-button"
+						onclick={() => (showTimerSelector = true)}
+					>
+						<span class="temperature-value">{formatTime(timerSeconds)}</span>
+					</button>
 				</div>
 				<div class="form-group">
-					<label for="timer-start-type">Start Type</label>
-					<select id="timer-start-type" bind:value={timerStartType}>
-						<option value="immediately">Immediately</option>
-						<option value="when-preheated">When Preheated</option>
-						<option value="manual">Manual</option>
-					</select>
+					<label>Start Type</label>
+					<div class="toggle-group toggle-group-vertical">
+						<button
+							type="button"
+							class="toggle-button"
+							class:active={timerStartType === 'immediately'}
+							onclick={() => (timerStartType = 'immediately')}
+						>
+							Immediately
+						</button>
+						<button
+							type="button"
+							class="toggle-button"
+							class:active={timerStartType === 'when-preheated'}
+							onclick={() => (timerStartType = 'when-preheated')}
+						>
+							When Preheated
+						</button>
+						<button
+							type="button"
+							class="toggle-button"
+							class:active={timerStartType === 'manual'}
+							onclick={() => (timerStartType = 'manual')}
+						>
+							Manual
+						</button>
+					</div>
 				</div>
 			{/if}
 		</section>
@@ -594,62 +619,105 @@
 		<section class="card">
 			<h2>Temperature Probe</h2>
 			<div class="form-group">
-				<label>
-					<input type="checkbox" bind:checked={probeEnabled} />
+				<button
+					type="button"
+					class="toggle-button toggle-button-large"
+					class:active={probeEnabled}
+					onclick={() => (probeEnabled = !probeEnabled)}
+				>
 					Enable Probe
-				</label>
+				</button>
 			</div>
 			{#if probeEnabled}
 				<div class="form-group">
-					<label for="probe-setpoint">Probe Setpoint (°C)</label>
-					<input
-						id="probe-setpoint"
-						type="number"
-						bind:value={probeSetpointCelsius}
-						min="1"
-						max="100"
-						step="1"
-					/>
+					<label>Temperature Unit</label>
+					<div class="toggle-group">
+						<button
+							type="button"
+							class="toggle-button"
+							class:active={probeTemperatureUnit === 'C'}
+							onclick={() => (probeTemperatureUnit = 'C')}
+						>
+							Celsius
+						</button>
+						<button
+							type="button"
+							class="toggle-button"
+							class:active={probeTemperatureUnit === 'F'}
+							onclick={() => (probeTemperatureUnit = 'F')}
+						>
+							Fahrenheit
+						</button>
+					</div>
+				</div>
+				<div class="form-group">
+					<label>Probe Setpoint</label>
+					<button
+						type="button"
+						class="temperature-button"
+						onclick={() => (showProbeDialpad = true)}
+					>
+						<span class="temperature-value">{displayProbeTemperature}</span>
+						<span class="temperature-unit">{probeTemperatureUnit === 'C' ? '°C' : '°F'}</span>
+					</button>
 					<span class="helper-text">
-						Range: 1-100°C (33-212°F)
+						{probeTemperatureUnit === 'C' ? 'Range: 1-100°C' : 'Range: 33-212°F'}
 					</span>
 				</div>
-				<form
-					method="POST"
-					action="?/setProbe"
-					use:enhance={() => {
-						return async ({ result, update }) => {
-							await update();
-							if (result.type === 'success' && result.data) {
-								lastResult = result.data as { success: boolean; error?: string };
-							}
-						};
-					}}
-				>
-					<input type="hidden" name="deviceId" value={deviceId} />
-					<input type="hidden" name="setpointCelsius" value={probeSetpointCelsius} />
-					<input type="hidden" name="deviceVersion" value={deviceVersion} />
-					<div class="form-group">
-						<button type="submit">Set Probe</button>
-					</div>
-				</form>
 			{/if}
 		</section>
 
-		<!-- Rack Position -->
-		<section class="card">
-			<h2>Rack Position</h2>
-			<div class="form-group">
-				<label for="rack-position">Position (1-5)</label>
-				<input
-					id="rack-position"
-					type="number"
-					bind:value={rackPosition}
-					min="1"
-					max="5"
-					step="1"
-				/>
-			</div>
+		<!-- Extra Settings (Fan & Vent, Rack Position) -->
+		<section class="card extra-settings">
+			<button
+				type="button"
+				class="extra-settings-header"
+				onclick={() => (showExtraSettings = !showExtraSettings)}
+			>
+				<h2>Extra Settings</h2>
+				<span class="chevron" class:expanded={showExtraSettings}>▼</span>
+			</button>
+			{#if showExtraSettings}
+				<div class="extra-settings-content">
+					<!-- Fan & Vent -->
+					<div class="card-inner">
+						<h3>Fan & Vent</h3>
+						<div class="form-group">
+							<label for="fan-speed">Fan Speed (%)</label>
+							<input
+								id="fan-speed"
+								type="range"
+								min="0"
+								max="100"
+								bind:value={fanSpeed}
+							/>
+							<span>{fanSpeed}%</span>
+						</div>
+						<div class="form-group">
+							<label>
+								<input type="checkbox" bind:checked={ventOpen} />
+								Vent Open
+							</label>
+						</div>
+					</div>
+
+					<!-- Rack Position -->
+					<div class="card-inner">
+						<h3>Rack Position</h3>
+						<div class="form-group">
+							<label for="rack-position">Position (1-5)</label>
+							<input
+								id="rack-position"
+								type="number"
+								bind:value={rackPosition}
+								min="1"
+								max="5"
+								step="1"
+							/>
+						</div>
+					</div>
+				</div>
+			{/if}
 		</section>
 
 		<!-- Control Buttons -->
@@ -671,7 +739,9 @@
 					<input type="hidden" name="deviceId" value={deviceId} />
 					<input type="hidden" name="deviceVersion" value={deviceVersion} />
 					<input type="hidden" name="stageData" value={JSON.stringify(buildStageData())} />
-					<button type="submit" class="btn-primary">Start Cook</button>
+					<button type="submit" class="btn-primary" disabled={!hasActiveHeatingElement}>
+						Start Cook
+					</button>
 				</form>
 				<form
 					method="POST"
@@ -828,6 +898,15 @@
 		width: 100%;
 	}
 
+	.toggle-group-vertical {
+		flex-direction: column;
+	}
+
+	.toggle-group-vertical .toggle-button {
+		width: 100%;
+		flex: none;
+	}
+
 	.toggle-button {
 		flex: 1;
 		padding: 1rem;
@@ -857,6 +936,12 @@
 	.toggle-button:not(.active):hover {
 		background: #f8f9fa;
 		border-color: #007bff;
+	}
+
+	.toggle-button-large {
+		width: 100%;
+		font-size: 1.125rem;
+		min-height: 64px;
 	}
 
 	.temperature-button {
@@ -928,6 +1013,12 @@
 		background-color: #218838;
 	}
 
+	.btn-primary:disabled {
+		background-color: #28a745;
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
 	.btn-danger {
 		background-color: #dc3545;
 	}
@@ -964,12 +1055,6 @@
 		grid-column: 1 / -1;
 	}
 
-	.token-config {
-		grid-column: 1 / -1;
-		background: #fff3cd;
-		border-color: #ffc107;
-	}
-
 	.success {
 		color: #28a745;
 		font-weight: 500;
@@ -980,8 +1065,74 @@
 		font-weight: 500;
 	}
 
+	.error-text {
+		color: #dc3545;
+		margin-top: 0.5rem;
+	}
+
+	.extra-settings {
+		grid-column: 1 / -1;
+	}
+
+	.extra-settings-header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 0;
+		cursor: pointer;
+		user-select: none;
+		width: 100%;
+		background: none;
+		border: none;
+		padding: 0;
+		text-align: left;
+		font-family: inherit;
+	}
+
+	.extra-settings-header h2 {
+		margin: 0;
+		font-size: 1.25rem;
+		color: #333;
+	}
+
+	.extra-settings-header .chevron {
+		font-size: 1rem;
+		color: #666;
+		transition: transform 0.2s;
+		display: inline-block;
+	}
+
+	.extra-settings-header .chevron.expanded {
+		transform: rotate(180deg);
+	}
+
+	.extra-settings-content {
+		margin-top: 1.5rem;
+		display: grid;
+		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.5rem;
+	}
+
+	.card-inner {
+		background: #f8f9fa;
+		border: 1px solid #e0e0e0;
+		border-radius: 8px;
+		padding: 1.5rem;
+	}
+
+	.card-inner h3 {
+		margin-top: 0;
+		margin-bottom: 1rem;
+		font-size: 1.125rem;
+		color: #333;
+	}
+
 	@media (max-width: 768px) {
 		.main-content {
+			grid-template-columns: 1fr;
+		}
+
+		.extra-settings-content {
 			grid-template-columns: 1fr;
 		}
 	}
