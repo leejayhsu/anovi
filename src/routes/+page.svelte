@@ -1,21 +1,39 @@
 <script lang="ts">
+	import { enhance } from '$app/forms';
+	import { invalidateAll } from '$app/navigation';
 	import {
-		createStartCookV1Command,
-		createStartCookV2Command,
-		createStopCookCommand,
-		createSetProbeV1Command,
-		createSetProbeV2Command,
-		createSetTemperatureUnitCommand,
 		celsiusToFahrenheit,
-		fahrenheitToCelsius,
 		type StartCookV1Stage,
 		type StartCookV2Stage
-	} from '$lib/anova';
+	} from '$lib/anova.js';
+
+	let { data } = $props();
 
 	// Device configuration
 	let deviceId = $state('');
 	let deviceVersion = $state<'v1' | 'v2'>('v2');
-	let websocket: WebSocket | null = $state(null);
+	
+	// Auto-select device version based on discovered devices
+	$effect(() => {
+		if (data.discoveredDevices && data.discoveredDevices.length > 0 && !deviceId) {
+			const firstDevice = data.discoveredDevices[0];
+			deviceId = firstDevice.cookerId;
+			deviceVersion = firstDevice.type === 'oven_v1' ? 'v1' : 'v2';
+		}
+	});
+
+	// Update device version when device ID changes
+	$effect(() => {
+		if (deviceId && data.discoveredDevices) {
+			const selectedDevice = data.discoveredDevices.find((d) => d.cookerId === deviceId);
+			if (selectedDevice) {
+				const version = selectedDevice.type === 'oven_v1' ? 'v1' : 'v2';
+				if (deviceVersion !== version) {
+					deviceVersion = version;
+				}
+			}
+		}
+	});
 
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
@@ -57,37 +75,16 @@
 		temperatureUnit === 'C' ? temperatureCelsius : temperatureFahrenheit
 	);
 
-	// Connection status
-	let connected = $state(false);
-	let lastCommand = $state<string | null>(null);
+	// UI state
+	let lastResult = $state<{ success: boolean; error?: string } | null>(null);
+	let tokenInput = $state('');
+	let showTokenForm = $state(!data.tokenStatus.hasToken);
+	let refreshingDevices = $state(false);
 
-	// Initialize WebSocket connection
-	async function connectWebSocket() {
-		// TODO: Implement WebSocket connection with Personal Access Token
-		// This is a placeholder - you'll need to implement the actual connection
-		console.log('WebSocket connection not yet implemented');
-		connected = false;
-	}
-
-	// Send command helper
-	async function sendCommand(command: any) {
-		if (!websocket || websocket.readyState !== WebSocket.OPEN) {
-			alert('WebSocket not connected. Please implement the connection logic.');
-			return;
-		}
-		websocket.send(JSON.stringify(command));
-		lastCommand = JSON.stringify(command, null, 2);
-	}
-
-	// Start cooking
-	async function startCook() {
-		if (!deviceId) {
-			alert('Please enter a device ID');
-			return;
-		}
-
+	// Build stage data for form submission
+	function buildStageData(): StartCookV1Stage | StartCookV2Stage {
 		if (deviceVersion === 'v1') {
-			const stage: StartCookV1Stage = {
+			return {
 				stepType: 'stage',
 				id: crypto.randomUUID(),
 				title: '',
@@ -145,15 +142,9 @@
 						}
 					}
 				})
-			};
-
-			const command = createStartCookV1Command({
-				deviceId,
-				stages: [stage]
-			});
-			await sendCommand(command);
+			} as StartCookV1Stage;
 		} else {
-			const stage: StartCookV2Stage = {
+			return {
 				id: crypto.randomUUID(),
 				do: {
 					type: 'cook',
@@ -197,53 +188,8 @@
 				title: '',
 				description: '',
 				rackPosition
-			};
-
-			const command = createStartCookV2Command({
-				deviceId,
-				stages: [stage]
-			});
-			await sendCommand(command);
+			} as StartCookV2Stage;
 		}
-	}
-
-	// Stop cooking
-	async function stopCook() {
-		if (!deviceId) {
-			alert('Please enter a device ID');
-			return;
-		}
-		const command = createStopCookCommand(deviceId);
-		await sendCommand(command);
-	}
-
-	// Set probe
-	async function setProbe() {
-		if (!deviceId) {
-			alert('Please enter a device ID');
-			return;
-		}
-		if (deviceVersion === 'v1') {
-			const command = createSetProbeV1Command(
-				deviceId,
-				probeSetpointCelsius,
-				celsiusToFahrenheit(probeSetpointCelsius)
-			);
-			await sendCommand(command);
-		} else {
-			const command = createSetProbeV2Command(deviceId, probeSetpointCelsius);
-			await sendCommand(command);
-		}
-	}
-
-	// Set temperature unit
-	async function setTemperatureUnit() {
-		if (!deviceId) {
-			alert('Please enter a device ID');
-			return;
-		}
-		const command = createSetTemperatureUnitCommand(deviceId, temperatureUnit);
-		await sendCommand(command);
 	}
 
 	// Format time
@@ -277,22 +223,108 @@
 	<header>
 		<h1>Anova Precision Oven Remote Control</h1>
 		<div class="connection-status">
-			<span class="status-indicator" class:connected={connected}></span>
-			<span>{connected ? 'Connected' : 'Disconnected'}</span>
+			<span class="status-indicator" class:connected={data.tokenStatus.hasToken}></span>
+			<span>{data.tokenStatus.hasToken ? 'Token Configured' : 'No Token'}</span>
 		</div>
 	</header>
 
 	<div class="main-content">
+		<!-- Token Configuration -->
+		{#if showTokenForm || !data.tokenStatus.hasToken}
+			<section class="card token-config">
+				<h2>Configure Anova Token</h2>
+				<form
+					method="POST"
+					action="?/setToken"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							await update();
+							if (result.type === 'success' && result.data?.success) {
+								showTokenForm = false;
+								await invalidateAll();
+							}
+						};
+					}}
+				>
+					<div class="form-group">
+						<label for="token">Personal Access Token</label>
+						<input
+							id="token"
+							name="token"
+							type="password"
+							bind:value={tokenInput}
+							placeholder="Enter your Anova personal access token"
+							required
+						/>
+					</div>
+					<div class="form-group">
+						<button type="submit">Save Token</button>
+					</div>
+				</form>
+			</section>
+		{:else}
+			<section class="card token-config">
+				<h2>Token Configuration</h2>
+				<p>Token is configured ✓</p>
+				<button type="button" onclick={() => (showTokenForm = true)}>
+					Update Token
+				</button>
+			</section>
+		{/if}
+
 		<!-- Device Configuration -->
 		<section class="card">
 			<h2>Device Configuration</h2>
+			{#if data.tokenStatus.hasToken}
+				<div class="form-group">
+					<form
+						method="POST"
+						action="?/refreshDevices"
+						use:enhance={() => {
+							return async ({ result, update }) => {
+								refreshingDevices = true;
+								await update();
+								refreshingDevices = false;
+								if (result.type === 'success' && result.data) {
+									await invalidateAll();
+									if (result.data.success) {
+										lastResult = { success: true };
+									} else {
+										lastResult = result.data as { success: boolean; error?: string };
+									}
+								}
+							};
+						}}
+					>
+						<button type="submit" disabled={refreshingDevices} class="btn-secondary">
+							{refreshingDevices ? 'Refreshing...' : 'Refresh Devices'}
+						</button>
+					</form>
+				</div>
+			{/if}
+			{#if data.discoveredDevices && data.discoveredDevices.length > 0}
+				<div class="form-group">
+					<label for="device-select">Select Device</label>
+					<select
+						id="device-select"
+						bind:value={deviceId}
+					>
+						<option value="">-- Select a device --</option>
+						{#each data.discoveredDevices as device}
+							<option value={device.cookerId}>
+								{device.name} ({device.type === 'oven_v1' ? 'v1' : 'v2'})
+							</option>
+						{/each}
+					</select>
+				</div>
+			{/if}
 			<div class="form-group">
 				<label for="device-id">Device ID</label>
 				<input
 					id="device-id"
 					type="text"
 					bind:value={deviceId}
-					placeholder="Enter device ID"
+					placeholder="Enter device ID or select from discovered devices"
 				/>
 			</div>
 			<div class="form-group">
@@ -302,7 +334,11 @@
 					<option value="v2">Oven v2</option>
 				</select>
 			</div>
-			<button type="button" onclick={connectWebSocket}>Connect</button>
+			{#if data.discoveredDevices && data.discoveredDevices.length === 0 && data.tokenStatus.hasToken}
+				<p class="helper-text">
+					No devices discovered yet. Make sure your oven is powered on and connected to Wi-Fi. Click "Refresh Devices" to search again.
+				</p>
+			{/if}
 		</section>
 
 		<!-- Temperature Control -->
@@ -340,9 +376,24 @@
 						: 'Range: 25-250°C (75-482°F)'}
 				</span>
 			</div>
-			<div class="form-group">
-				<button type="button" onclick={setTemperatureUnit}>Set Temperature Unit</button>
-			</div>
+			<form
+				method="POST"
+				action="?/setTemperatureUnit"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						await update();
+						if (result.type === 'success' && result.data) {
+							lastResult = result.data as { success: boolean; error?: string };
+						}
+					};
+				}}
+			>
+				<input type="hidden" name="deviceId" value={deviceId} />
+				<input type="hidden" name="unit" value={temperatureUnit} />
+				<div class="form-group">
+					<button type="submit">Set Temperature Unit</button>
+				</div>
+			</form>
 		</section>
 
 		<!-- Heating Elements -->
@@ -477,9 +528,25 @@
 						Range: 1-100°C (33-212°F)
 					</span>
 				</div>
-				<div class="form-group">
-					<button type="button" onclick={setProbe}>Set Probe</button>
-				</div>
+				<form
+					method="POST"
+					action="?/setProbe"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							await update();
+							if (result.type === 'success' && result.data) {
+								lastResult = result.data as { success: boolean; error?: string };
+							}
+						};
+					}}
+				>
+					<input type="hidden" name="deviceId" value={deviceId} />
+					<input type="hidden" name="setpointCelsius" value={probeSetpointCelsius} />
+					<input type="hidden" name="deviceVersion" value={deviceVersion} />
+					<div class="form-group">
+						<button type="submit">Set Probe</button>
+					</div>
+				</form>
 			{/if}
 		</section>
 
@@ -503,20 +570,50 @@
 		<section class="card actions">
 			<h2>Actions</h2>
 			<div class="button-group">
-				<button type="button" class="btn-primary" onclick={startCook}>
-					Start Cook
-				</button>
-				<button type="button" class="btn-danger" onclick={stopCook}>
-					Stop Cook
-				</button>
+				<form
+					method="POST"
+					action="?/startCook"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							await update();
+							if (result.type === 'success' && result.data) {
+								lastResult = result.data as { success: boolean; error?: string };
+							}
+						};
+					}}
+				>
+					<input type="hidden" name="deviceId" value={deviceId} />
+					<input type="hidden" name="deviceVersion" value={deviceVersion} />
+					<input type="hidden" name="stageData" value={JSON.stringify(buildStageData())} />
+					<button type="submit" class="btn-primary">Start Cook</button>
+				</form>
+				<form
+					method="POST"
+					action="?/stopCook"
+					use:enhance={() => {
+						return async ({ result, update }) => {
+							await update();
+							if (result.type === 'success' && result.data) {
+								lastResult = result.data as { success: boolean; error?: string };
+							}
+						};
+					}}
+				>
+					<input type="hidden" name="deviceId" value={deviceId} />
+					<button type="submit" class="btn-danger">Stop Cook</button>
+				</form>
 			</div>
 		</section>
 
-		<!-- Last Command -->
-		{#if lastCommand}
+		<!-- Last Result -->
+		{#if lastResult}
 			<section class="card">
-				<h2>Last Command Sent</h2>
-				<pre class="command-output">{lastCommand}</pre>
+				<h2>Last Action Result</h2>
+				{#if lastResult.success}
+					<p class="success">✓ Command sent successfully</p>
+				{:else}
+					<p class="error">✗ Error: {lastResult.error || 'Unknown error'}</p>
+				{/if}
 			</section>
 		{/if}
 	</div>
@@ -653,6 +750,20 @@
 		background-color: #c82333;
 	}
 
+	.btn-secondary {
+		background-color: #6c757d;
+	}
+
+	.btn-secondary:hover {
+		background-color: #5a6268;
+	}
+
+	.btn-secondary:disabled {
+		background-color: #6c757d;
+		opacity: 0.6;
+		cursor: not-allowed;
+	}
+
 	.button-group {
 		display: flex;
 		gap: 1rem;
@@ -662,18 +773,25 @@
 		flex: 1;
 	}
 
-	.command-output {
-		background: #f5f5f5;
-		border: 1px solid #ddd;
-		border-radius: 4px;
-		padding: 1rem;
-		overflow-x: auto;
-		font-size: 0.875rem;
-		font-family: 'Courier New', monospace;
-	}
 
 	.actions {
 		grid-column: 1 / -1;
+	}
+
+	.token-config {
+		grid-column: 1 / -1;
+		background: #fff3cd;
+		border-color: #ffc107;
+	}
+
+	.success {
+		color: #28a745;
+		font-weight: 500;
+	}
+
+	.error {
+		color: #dc3545;
+		font-weight: 500;
 	}
 
 	@media (max-width: 768px) {
@@ -682,3 +800,4 @@
 		}
 	}
 </style>
+

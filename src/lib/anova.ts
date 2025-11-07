@@ -28,7 +28,7 @@ export function fahrenheitToCelsius(fahrenheit: number): number {
 }
 
 // Base command structure
-interface BaseCommand {
+export interface BaseCommand {
 	command: string;
 	requestId: string;
 	payload: {

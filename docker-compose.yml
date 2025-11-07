@@ -1,0 +1,18 @@
+version: '3.8'
+
+services:
+  app:
+    build: .
+    ports:
+      - "3000:3000"
+    volumes:
+      # Bind mount the data directory to persist the database
+      - ./data:/app/data
+    environment:
+      # Optional: Override database path if needed
+      # DATABASE_PATH: /app/data/anova.db
+      # Optional: Override WebSocket URL if needed
+      # ANOVA_WS_URL: wss://devices.anovaculinary.io
+    restart: unless-stopped
+
+
