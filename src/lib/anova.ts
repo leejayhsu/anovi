@@ -1,9 +1,6 @@
 // Anova Precision Oven API Helper Functions
 // These functions create command payloads for the WebSocket API
-// You'll need to implement the actual WebSocket connection logic
-
-// Hardcoded personal access token (replace with your actual token)
-export const PERSONAL_ACCESS_TOKEN = 'YOUR_TOKEN_HERE';
+// Token authentication is handled server-side via db.server.ts
 
 // Device ID (will be obtained from device discovery)
 export let deviceId: string = '';
