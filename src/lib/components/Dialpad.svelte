@@ -59,24 +59,26 @@
 				{/if}
 			</div>
 			
-			<div class="dialpad-grid">
-				<button class="dialpad-btn" onclick={() => handleDigit(1)}>1</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(2)}>2</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(3)}>3</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(4)}>4</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(5)}>5</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(6)}>6</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(7)}>7</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(8)}>8</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(9)}>9</button>
-				<button class="dialpad-btn clear-btn" onclick={handleClear}>C</button>
-				<button class="dialpad-btn" onclick={() => handleDigit(0)}>0</button>
-				<button class="dialpad-btn backspace-btn" onclick={handleBackspace}>⌫</button>
-			</div>
-			
-			<div class="dialpad-actions">
-				<button class="action-btn cancel-btn" onclick={handleCancel}>Cancel</button>
-				<button class="action-btn done-btn" onclick={handleDone}>Done</button>
+			<div class="dialpad-content">
+				<div class="dialpad-grid">
+					<button class="dialpad-btn" onclick={() => handleDigit(1)}>1</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(2)}>2</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(3)}>3</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(4)}>4</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(5)}>5</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(6)}>6</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(7)}>7</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(8)}>8</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(9)}>9</button>
+					<button class="dialpad-btn clear-btn" onclick={handleClear}>C</button>
+					<button class="dialpad-btn" onclick={() => handleDigit(0)}>0</button>
+					<button class="dialpad-btn backspace-btn" onclick={handleBackspace}>⌫</button>
+				</div>
+				
+				<div class="dialpad-actions">
+					<button class="action-btn done-btn" onclick={handleDone}>Done</button>
+					<button class="action-btn cancel-btn" onclick={handleCancel}>Cancel</button>
+				</div>
 			</div>
 			
 			<div class="dialpad-range">
@@ -104,29 +106,32 @@
 	.dialpad-container {
 		background: white;
 		border-radius: 16px;
-		padding: 1.5rem;
+		padding: 1rem;
 		width: 100%;
-		max-width: 400px;
+		max-width: 450px;
 		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		display: flex;
+		flex-direction: column;
 	}
 
 	.dialpad-header {
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		margin-bottom: 1.5rem;
+		margin-bottom: 1rem;
+		flex-shrink: 0;
 	}
 
 	.dialpad-header h3 {
 		margin: 0;
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		color: #333;
 	}
 
 	.close-btn {
 		background: none;
 		border: none;
-		font-size: 2rem;
+		font-size: 1.75rem;
 		color: #666;
 		cursor: pointer;
 		padding: 0;
@@ -146,46 +151,56 @@
 	.dialpad-display {
 		background: #f5f5f5;
 		border-radius: 8px;
-		padding: 1.5rem;
+		padding: 1rem;
 		text-align: center;
-		margin-bottom: 1.5rem;
-		min-height: 80px;
+		margin-bottom: 1rem;
+		min-height: 60px;
 		display: flex;
 		align-items: center;
 		justify-content: center;
 		gap: 0.5rem;
+		flex-shrink: 0;
 	}
 
 	.display-value {
-		font-size: 3rem;
+		font-size: 2.5rem;
 		font-weight: bold;
 		color: #333;
 	}
 
 	.unit {
-		font-size: 2rem;
+		font-size: 1.75rem;
 		color: #666;
+	}
+
+	.dialpad-content {
+		display: flex;
+		gap: 0.75rem;
+		margin-bottom: 1rem;
+		align-items: stretch;
+		flex: 1;
+		min-height: 0;
 	}
 
 	.dialpad-grid {
 		display: grid;
 		grid-template-columns: repeat(3, 1fr);
-		gap: 0.75rem;
-		margin-bottom: 1.5rem;
+		gap: 0.5rem;
+		flex: 1;
 	}
 
 	.dialpad-btn {
 		aspect-ratio: 1;
 		border: 2px solid #ddd;
 		border-radius: 12px;
-		font-size: 1.5rem;
+		font-size: 1.25rem;
 		font-weight: 600;
 		background: white;
 		color: #333;
 		cursor: pointer;
 		transition: all 0.2s;
 		touch-action: manipulation;
-		min-height: 60px;
+		min-height: 50px;
 	}
 
 	.dialpad-btn:active {
@@ -217,21 +232,27 @@
 
 	.dialpad-actions {
 		display: flex;
-		gap: 0.75rem;
-		margin-bottom: 1rem;
+		flex-direction: column;
+		gap: 0.5rem;
+		height: 100%;
+		min-width: 80px;
 	}
 
 	.action-btn {
-		flex: 1;
-		padding: 1rem;
+		padding: 0.875rem 1.25rem;
 		border: none;
 		border-radius: 8px;
-		font-size: 1.125rem;
+		font-size: 1rem;
 		font-weight: 600;
 		cursor: pointer;
 		transition: all 0.2s;
 		touch-action: manipulation;
-		min-height: 56px;
+		flex: 1;
+		white-space: nowrap;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		min-height: 0;
 	}
 
 	.cancel-btn {
@@ -258,15 +279,30 @@
 		text-align: center;
 		font-size: 0.875rem;
 		color: #666;
+		flex-shrink: 0;
 	}
 
 	@media (max-width: 480px) {
 		.dialpad-container {
-			padding: 1rem;
+			padding: 0.875rem;
+			max-width: 100%;
+		}
+
+		.dialpad-content {
+			flex-direction: column;
+		}
+
+		.dialpad-actions {
+			flex-direction: row;
+			width: 100%;
+		}
+
+		.action-btn {
+			flex: 1;
 		}
 
 		.display-value {
-			font-size: 2.5rem;
+			font-size: 2rem;
 		}
 
 		.unit {
@@ -274,8 +310,8 @@
 		}
 
 		.dialpad-btn {
-			min-height: 70px;
-			font-size: 1.75rem;
+			min-height: 60px;
+			font-size: 1.5rem;
 		}
 	}
 </style>
