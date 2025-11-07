@@ -234,7 +234,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 0.5rem;
-		height: 100%;
 		min-width: 80px;
 	}
 
