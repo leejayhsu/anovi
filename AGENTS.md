@@ -1,1 +1,2 @@
-use modern version of docker compose syntax: i.e. `docker compose up` instead of `docker-compose up`
+- use conventional commits for commit messages and PR titles.
+- use modern version of docker compose syntax: i.e. `docker compose up` instead of `docker-compose up`

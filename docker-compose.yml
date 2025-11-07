@@ -15,5 +15,3 @@ services:
       # Optional: Override WebSocket URL if needed
       # ANOVA_WS_URL: wss://devices.anovaculinary.io
     restart: unless-stopped
-
-
