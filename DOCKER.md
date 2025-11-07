@@ -29,6 +29,31 @@ docker run -d \
   anova-oven-control
 ```
 
+### Using Published Image from GitHub Container Registry
+
+The Docker image is automatically built and published to GitHub Container Registry on every push to the main branch.
+
+```bash
+# Pull the latest image
+docker pull ghcr.io/YOUR_USERNAME/anovi:latest
+
+# Run the container
+docker run -d \
+  -p 3000:3000 \
+  -v $(pwd)/data:/app/data \
+  --name anova-oven \
+  ghcr.io/YOUR_USERNAME/anovi:latest
+```
+
+**Note:** Replace `YOUR_USERNAME` with your GitHub username or organization name. If the repository is private, you'll need to authenticate:
+
+```bash
+# Login to GitHub Container Registry
+echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
+
+# Then pull and run as above
+```
+
 ## Important Notes
 
 ### Database Persistence
