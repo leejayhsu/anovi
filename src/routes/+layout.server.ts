@@ -1,9 +1,10 @@
-import { hasToken } from '$lib/db.server.js';
+import { hasToken, isTokenFromEnv } from '$lib/db.server.js';
 
 export async function load() {
 	return {
 		tokenStatus: {
-			hasToken: hasToken()
+			hasToken: hasToken(),
+			isFromEnv: isTokenFromEnv()
 		}
 	};
 }

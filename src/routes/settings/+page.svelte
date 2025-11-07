@@ -64,7 +64,16 @@
 		<!-- Token Configuration -->
 		<section class="card">
 			<h2>Token Configuration</h2>
-			{#if showTokenForm || !data.tokenStatus.hasToken}
+			{#if data.tokenStatus.isFromEnv}
+				<div class="env-token-notice">
+					<p class="info-message">
+						✓ Token is configured via environment variable (<code>ANOVA_TOKEN</code> or <code>ANOVA_PERSONAL_ACCESS_TOKEN</code>)
+					</p>
+					<p class="helper-text">
+						To use database storage instead, remove the environment variable and restart the application.
+					</p>
+				</div>
+			{:else if showTokenForm || !data.tokenStatus.hasToken}
 				<form
 					method="POST"
 					action="?/setToken"
@@ -100,6 +109,9 @@
 							</button>
 						{/if}
 					</div>
+					{#if lastResult && !lastResult.success && lastResult.error}
+						<p class="error">{lastResult.error}</p>
+					{/if}
 				</form>
 			{:else}
 				<p>Token is configured ✓</p>
@@ -317,6 +329,27 @@
 	.error {
 		color: #dc3545;
 		font-weight: 500;
+	}
+
+	.env-token-notice {
+		padding: 1rem;
+		background: #e7f3ff;
+		border: 1px solid #b3d9ff;
+		border-radius: 4px;
+	}
+
+	.info-message {
+		margin: 0 0 0.5rem 0;
+		color: #004085;
+		font-weight: 500;
+	}
+
+	.info-message code {
+		background: #fff;
+		padding: 0.125rem 0.25rem;
+		border-radius: 3px;
+		font-family: 'Monaco', 'Courier New', monospace;
+		font-size: 0.9em;
 	}
 
 	@media (max-width: 768px) {

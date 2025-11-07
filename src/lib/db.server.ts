@@ -51,7 +51,19 @@ function getDatabase(): Database.Database {
 	return db;
 }
 
+/**
+ * Get the token from environment variable or database.
+ * Environment variable takes precedence over database.
+ * @returns The token string or null if not found
+ */
 export function getToken(): string | null {
+	// Check environment variable first
+	const envToken = process.env.ANOVA_TOKEN || process.env.ANOVA_PERSONAL_ACCESS_TOKEN;
+	if (envToken) {
+		return envToken;
+	}
+
+	// Fall back to database
 	const database = getDatabase();
 	const row = database.prepare('SELECT token FROM tokens WHERE id = ?').get('default') as
 		| { token: string }
@@ -59,6 +71,19 @@ export function getToken(): string | null {
 	return row?.token || null;
 }
 
+/**
+ * Check if token is coming from environment variable
+ * @returns true if token is from environment variable, false otherwise
+ */
+export function isTokenFromEnv(): boolean {
+	return !!(process.env.ANOVA_TOKEN || process.env.ANOVA_PERSONAL_ACCESS_TOKEN);
+}
+
+/**
+ * Set the token in the database.
+ * Note: If token is set via environment variable, this will not override it.
+ * @param token The token to save
+ */
 export function setToken(token: string): void {
 	const database = getDatabase();
 	database

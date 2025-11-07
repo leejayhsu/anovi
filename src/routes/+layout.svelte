@@ -14,7 +14,11 @@
 		<a href="/" class="logo">Anova Oven Remote Control</a>
 		<div class="header-right">
 			<span class="token-status" class:configured={data.tokenStatus.hasToken}>
-				{data.tokenStatus.hasToken ? 'Token configured ✓' : 'Token not configured'}
+				{data.tokenStatus.hasToken
+					? data.tokenStatus.isFromEnv
+						? 'Token configured (env) ✓'
+						: 'Token configured ✓'
+					: 'Token not configured'}
 			</span>
 			<a href="/settings" class="settings-link" class:active={$page.url.pathname === '/settings'}>
 				⚙️ Settings

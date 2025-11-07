@@ -1,22 +1,46 @@
-# sv
+# Anova Oven Remote Control
 
-Everything you need to build a Svelte project, powered by [`sv`](https://github.com/sveltejs/cli).
+A web application for remotely controlling Anova Precision Ovens via their WebSocket API.
 
-## Creating a project
+## Features
 
-If you're seeing this, you've probably already done this step. Congrats!
+- Remote control of Anova Precision Ovens (v1 and v2)
+- Device discovery and management
+- Start/stop cooking sessions
+- Configure temperature, steam, and other cooking parameters
+- Set probe temperature targets
 
-```sh
-# create a new project in the current directory
-npx sv create
+## Configuration
 
-# create a new project in my-app
-npx sv create my-app
+### Personal Access Token
+
+The application requires an Anova personal access token to authenticate with the Anova API. You can configure the token in two ways:
+
+#### Option 1: Environment Variable (Recommended for Production)
+
+Set one of the following environment variables:
+
+```bash
+export ANOVA_TOKEN="anova-your-token-here"
+# or
+export ANOVA_PERSONAL_ACCESS_TOKEN="anova-your-token-here"
 ```
 
-## Developing
+The environment variable takes precedence over database storage. If set, the token form in the settings page will be disabled.
 
-Once you've created a project and installed dependencies with `npm install` (or `pnpm install` or `yarn`), start a development server:
+#### Option 2: Database Storage (Default)
+
+If no environment variable is set, you can configure the token through the web interface:
+
+1. Navigate to the Settings page
+2. Enter your Anova personal access token
+3. Click "Save Token"
+
+The token will be stored in a local SQLite database.
+
+## Development
+
+Once you've created a project and installed dependencies with `npm install`, start a development server:
 
 ```sh
 npm run dev
@@ -35,4 +59,15 @@ npm run build
 
 You can preview the production build with `npm run preview`.
 
-> To deploy your app, you may need to install an [adapter](https://svelte.dev/docs/kit/adapters) for your target environment.
+## Environment Variables
+
+- `ANOVA_TOKEN` or `ANOVA_PERSONAL_ACCESS_TOKEN` - Anova personal access token (optional, can be set via UI)
+- `DATABASE_PATH` - Path to SQLite database file (default: `./data/anova.db`)
+
+## Database
+
+The application uses SQLite to store:
+- Personal access tokens (if not using environment variable)
+- Discovered device information
+
+The database file is created automatically at the path specified by `DATABASE_PATH` (default: `./data/anova.db`).
