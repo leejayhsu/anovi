@@ -9,7 +9,12 @@ const config = {
 
 	kit: {
 		// Using adapter-node for Docker deployment
-		adapter: adapter()
+		adapter: adapter(),
+		// Configure CSRF protection for Docker deployments
+		// Allow all origins since we're running in Docker
+		csrf: {
+			checkOrigin: false
+		}
 	}
 };
 
