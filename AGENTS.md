@@ -1,0 +1,1 @@
+use modern version of docker compose syntax: i.e. `docker compose up` instead of `docker-compose up`

@@ -28,7 +28,6 @@ RUN mkdir -p /app/data
 EXPOSE 3000
 
 # Start the app using the built output
-# Note: You may need to use adapter-node for Docker
-CMD ["node", "build"]
+CMD ["node", "build/index.js"]
 
 
