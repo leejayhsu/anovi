@@ -1,7 +1,15 @@
 export interface WebSocketMessage {
-	command: 'RESPONSE' | 'EVENT_APO_WIFI_LIST' | 'EVENT_USER_STATE' | 'EVENT_APO_STATE';
+	command:
+		| "RESPONSE"
+		| "EVENT_APO_WIFI_LIST"
+		| "EVENT_USER_STATE"
+		| "EVENT_APO_STATE";
 	requestId: string;
-	payload: ResponsePayload | EventApoWifiListPayload | EventUserStatePayload | EventApoStatePayload;
+	payload:
+		| ResponsePayload
+		| EventApoWifiListPayload
+		| EventUserStatePayload
+		| EventApoStatePayload;
 }
 
 export interface ResponsePayload {
@@ -17,7 +25,7 @@ export interface DeviceInfo {
 	cookerId: string;
 	name: string;
 	pairedAt: string;
-	type: 'oven_v1' | 'oven_v2';
+	type: "oven_v1" | "oven_v2";
 }
 
 export interface EventUserStatePayload {
@@ -39,19 +47,19 @@ export interface EventUserStatePayload {
 
 export interface EventApoStatePayload {
 	cookerId: string;
-	type: 'oven_v1' | 'oven_v2';
+	type: "oven_v1" | "oven_v2";
 	state: ApoState;
-  }
-  
-  export interface ApoState {
+}
+
+export interface ApoState {
 	version: number;
 	updatedTimestamp: string;
 	systemInfo: SystemInfo;
 	state: OvenState;
 	nodes: OvenNodes;
-  }
-  
-  export interface SystemInfo {
+}
+
+export interface SystemInfo {
 	online: boolean;
 	hardwareVersion: string;
 	powerMains: number;
@@ -63,15 +71,15 @@ export interface EventApoStatePayload {
 	lastConnectedTimestamp: string;
 	lastDisconnectedTimestamp: string;
 	triacsFailed: boolean;
-  }
-  
-  export interface OvenState {
+}
+
+export interface OvenState {
 	mode: string; // 'idle', 'cook', etc.
-	temperatureUnit: 'F' | 'C';
+	temperatureUnit: "F" | "C";
 	processedCommandIds: string[];
-  }
-  
-  export interface OvenNodes {
+}
+
+export interface OvenNodes {
 	temperatureBulbs: TemperatureBulbs;
 	timer: Timer;
 	temperatureProbe: TemperatureProbe;
@@ -83,117 +91,117 @@ export interface EventApoStatePayload {
 	door: Door;
 	lamp: Lamp;
 	userInterfaceCircuit: UserInterfaceCircuit;
-  }
-  
-  export interface TemperatureBulbs {
+}
+
+export interface TemperatureBulbs {
 	mode: string; // 'dry', 'wet', etc.
 	wet: WetBulb;
 	dry: DryBulb;
 	dryTop: DryTopBottom;
 	dryBottom: DryTopBottom;
-  }
-  
-  export interface WetBulb {
+}
+
+export interface WetBulb {
 	current: Temperature;
 	dosed: boolean;
 	doseFailed: boolean;
 	setpoint?: Temperature;
-  }
-  
-  export interface DryBulb {
+}
+
+export interface DryBulb {
 	current: Temperature;
 	setpoint?: Temperature;
-  }
-  
-  export interface DryTopBottom {
+}
+
+export interface DryTopBottom {
 	current: Temperature;
 	overheated: boolean;
 	setpoint?: Temperature;
-  }
-  
-  export interface Temperature {
+}
+
+export interface Temperature {
 	celsius: number;
 	fahrenheit: number;
-  }
-  
-  export interface Timer {
+}
+
+export interface Timer {
 	mode: string; // 'idle', 'running', etc.
 	initial: number;
 	current: number;
-  }
-  
-  export interface TemperatureProbe {
+}
+
+export interface TemperatureProbe {
 	connected: boolean;
 	current?: Temperature;
 	setpoint?: Temperature;
-  }
-  
-  export interface SteamGenerators {
+}
+
+export interface SteamGenerators {
 	mode: string; // 'idle', 'active', etc.
 	relativeHumidity: RelativeHumidity;
 	evaporator: Evaporator;
 	boiler: Boiler;
-  }
-  
-  export interface RelativeHumidity {
+}
+
+export interface RelativeHumidity {
 	current: number;
 	setpoint?: number;
-  }
-  
-  export interface Evaporator {
+}
+
+export interface Evaporator {
 	failed: boolean;
 	overheated: boolean;
 	celsius: number;
 	watts: number;
-  }
-  
-  export interface Boiler {
+}
+
+export interface Boiler {
 	descaleRequired: boolean;
 	failed: boolean;
 	overheated: boolean;
 	celsius: number;
 	watts: number;
 	dosed: boolean;
-  }
-  
-  export interface HeatingElements {
+}
+
+export interface HeatingElements {
 	top: HeatingElement;
 	bottom: HeatingElement;
 	rear: HeatingElement;
-  }
-  
-  export interface HeatingElement {
+}
+
+export interface HeatingElement {
 	on: boolean;
 	failed: boolean;
 	watts: number;
-  }
-  
-  export interface Fan {
+}
+
+export interface Fan {
 	speed: number;
 	failed: boolean;
-  }
-  
-  export interface Vent {
+}
+
+export interface Vent {
 	open: boolean;
-  }
-  
-  export interface WaterTank {
+}
+
+export interface WaterTank {
 	empty: boolean;
-  }
-  
-  export interface Door {
+}
+
+export interface Door {
 	closed: boolean;
-  }
-  
-  export interface Lamp {
+}
+
+export interface Lamp {
 	on: boolean;
 	failed: boolean;
 	preference: string; // 'on', 'off', 'auto'
-  }
-  
-  export interface UserInterfaceCircuit {
+}
+
+export interface UserInterfaceCircuit {
 	communicationFailed: boolean;
-  }
+}
 
 // Base command structure
 export interface BaseCommand {
@@ -211,17 +219,16 @@ export interface StartCookV1Options {
 	stages: StartCookV1Stage[];
 }
 
-
 // Start Cook Command - Oven v1
 export interface StartCookV1Stage {
-	stepType: 'stage';
+	stepType: "stage";
 	id: string;
 	title: string;
 	description: string;
-	type: 'preheat' | 'cook';
+	type: "preheat" | "cook";
 	userActionRequired: boolean;
 	temperatureBulbs?: {
-		mode: 'dry' | 'wet';
+		mode: "dry" | "wet";
 		dry?: {
 			setpoint: {
 				celsius: number;
@@ -247,9 +254,9 @@ export interface StartCookV1Stage {
 		open: boolean;
 	};
 	rackPosition?: number; // 1-5
-	stageTransitionType?: 'automatic' | 'manual';
+	stageTransitionType?: "automatic" | "manual";
 	steamGenerators?: {
-		mode: 'idle' | 'relative-humidity' | 'steam-percentage';
+		mode: "idle" | "relative-humidity" | "steam-percentage";
 		relativeHumidity?: {
 			setpoint: number; // 0-100
 		};
@@ -259,7 +266,7 @@ export interface StartCookV1Stage {
 	};
 	timer?: {
 		initial: number; // seconds
-		startType?: 'immediately' | 'when-preheated' | 'manual';
+		startType?: "immediately" | "when-preheated" | "manual";
 	};
 	probe?: {
 		setpoint: {
@@ -278,21 +285,21 @@ export interface StartCookV2Options {
 export interface StartCookV2Stage {
 	id: string;
 	do: {
-		type: 'cook';
+		type: "cook";
 		fan?: { speed: number };
 		heatingElements?: {
 			top: { on: boolean };
 			bottom: { on: boolean };
 			rear: { on: boolean };
 		};
-		exhaustVent?: { state: 'open' | 'closed' };
+		exhaustVent?: { state: "open" | "closed" };
 		temperatureBulbs?: {
-			mode: 'dry' | 'wet';
+			mode: "dry" | "wet";
 			dry?: { setpoint: { celsius: number } };
 			wet?: { setpoint: { celsius: number } };
 		};
 		steamGenerators?: {
-			mode: 'idle' | 'relative-humidity' | 'steam-percentage';
+			mode: "idle" | "relative-humidity" | "steam-percentage";
 			relativeHumidity?: { setpoint: number };
 			steamPercentage?: { setpoint: number };
 		};

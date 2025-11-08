@@ -1,5 +1,5 @@
-import adapter from '@sveltejs/adapter-node';
-import { vitePreprocess } from '@sveltejs/vite-plugin-svelte';
+import adapter from "@sveltejs/adapter-node";
+import { vitePreprocess } from "@sveltejs/vite-plugin-svelte";
 
 /** @type {import('@sveltejs/kit').Config} */
 const config = {
@@ -13,9 +13,9 @@ const config = {
 		// Configure CSRF protection for Docker deployments
 		// Allow all origins since we're running in Docker
 		csrf: {
-			checkOrigin: false
-		}
-	}
+			checkOrigin: false,
+		},
+	},
 };
 
 export default config;
