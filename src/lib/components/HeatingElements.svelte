@@ -11,8 +11,8 @@
 		$props();
 </script>
 
-<section class="card">
-	<h2>Heating Elements</h2>
+<div class="heating-elements">
+	<h3>Heating Elements</h3>
 	<div class="form-group">
 		<div class="toggle-group">
 			<button
@@ -44,4 +44,4 @@
 			<p class="helper-text error-text">⚠️ At least one heating element must be active</p>
 		{/if}
 	</div>
-</section>
+</div>

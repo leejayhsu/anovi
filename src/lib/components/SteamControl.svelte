@@ -10,8 +10,8 @@
 	let displayMode = $derived(steamSetpoint === 0 ? 'Idle' : `${steamSetpoint}%`);
 </script>
 
-<section class="card">
-	<h2>Steam</h2>
+<div class="steam-control">
+	<h3>Steam</h3>
 	<div class="form-group">
 		<label for="steam-setpoint">
 			<strong>{displayMode}</strong>
@@ -30,7 +30,7 @@
 			<span>100%</span>
 		</div>
 	</div>
-</section>
+</div>
 
 <style>
 	.slider-labels {

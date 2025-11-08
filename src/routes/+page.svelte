@@ -293,18 +293,23 @@
 				{dialpadMax}
 			/>
 
-			<HeatingElements
-				{topElement}
-				{bottomElement}
-				{rearElement}
-				{hasActiveHeatingElement}
-				onToggle={toggleHeatingElement}
-			/>
+			<section class="card">
+				<h2>Heating & Steam</h2>
+				<HeatingElements
+					{topElement}
+					{bottomElement}
+					{rearElement}
+					{hasActiveHeatingElement}
+					onToggle={toggleHeatingElement}
+				/>
 
-			<SteamControl
-				{steamSetpoint}
-				onSetpointChange={(value) => (steamSetpoint = value)}
-			/>
+				<div class="divider"></div>
+
+				<SteamControl
+					{steamSetpoint}
+					onSetpointChange={(value) => (steamSetpoint = value)}
+				/>
+			</section>
 
 			<TimerControl
 				{timerEnabled}
@@ -379,6 +384,12 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
+	}
+
+	.divider {
+		height: 1px;
+		background: #e5e5e5;
+		margin: 1.5rem 0;
 	}
 
 	@media (max-width: 1024px) {
