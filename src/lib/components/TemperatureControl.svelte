@@ -25,9 +25,8 @@
 </script>
 
 <section class="card">
-	<h2>Temperature Control</h2>
-	<div class="form-group">
-		<label>Mode</label>
+	<div class="header">
+		<h2>Temp</h2>
 		<div class="toggle-group">
 			<button
 				type="button"
@@ -48,7 +47,6 @@
 		</div>
 	</div>
 	<div class="form-group">
-		<label>Temperature</label>
 		<button
 			type="button"
 			class="temperature-button"
@@ -68,6 +66,31 @@
 		</span>
 	</div>
 </section>
+
+<style>
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1.5rem;
+	}
+
+	.header h2 {
+		margin: 0;
+	}
+
+	.header .toggle-group {
+		gap: 0.25rem;
+		width: auto;
+	}
+
+	.header .toggle-button {
+		padding: 0.25rem 0.5rem;
+		font-size: 1.1rem;
+		min-height: auto;
+		flex: none;
+	}
+</style>
 
 {#if showTemperatureDialpad}
 	<Dialpad
