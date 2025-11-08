@@ -42,8 +42,7 @@
 	let ventOpen = $state(false);
 
 	// Steam settings
-	let steamMode = $state<'idle' | 'relative-humidity' | 'steam-percentage'>('idle');
-	let steamSetpoint = $state(100);
+	let steamSetpoint = $state(0); // 0 = idle, >0 = relative-humidity
 
 	// Timer settings
 	let timerEnabled = $state(false);
@@ -109,14 +108,14 @@
 			vent: { open: ventOpen },
 			rackPosition,
 			stageTransitionType: 'automatic',
-			...(steamMode !== 'idle' && {
-				steamGenerators: {
-					mode: steamMode,
-					...(steamMode === 'relative-humidity'
-						? { relativeHumidity: { setpoint: steamSetpoint } }
-						: { steamPercentage: { setpoint: steamSetpoint } })
-				}
-			}),
+			// Steam control: 0 = idle, >0 = relative-humidity
+			steamGenerators:
+				steamSetpoint === 0
+					? { mode: 'idle' }
+					: {
+							mode: 'relative-humidity',
+							relativeHumidity: { setpoint: steamSetpoint }
+						},
 			...(timerEnabled && {
 				timer: {
 					initial: timerSeconds,
@@ -303,9 +302,7 @@
 			/>
 
 			<SteamControl
-				{steamMode}
 				{steamSetpoint}
-				onModeChange={(mode) => (steamMode = mode)}
 				onSetpointChange={(value) => (steamSetpoint = value)}
 			/>
 
