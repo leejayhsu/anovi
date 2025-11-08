@@ -1,15 +1,7 @@
 export interface WebSocketMessage {
-	command:
-		| "RESPONSE"
-		| "EVENT_APO_WIFI_LIST"
-		| "EVENT_USER_STATE"
-		| "EVENT_APO_STATE";
+	command: 'RESPONSE' | 'EVENT_APO_WIFI_LIST' | 'EVENT_USER_STATE' | 'EVENT_APO_STATE';
 	requestId: string;
-	payload:
-		| ResponsePayload
-		| EventApoWifiListPayload
-		| EventUserStatePayload
-		| EventApoStatePayload;
+	payload: ResponsePayload | EventApoWifiListPayload | EventUserStatePayload | EventApoStatePayload;
 }
 
 export interface ResponsePayload {
@@ -25,7 +17,7 @@ export interface DeviceInfo {
 	cookerId: string;
 	name: string;
 	pairedAt: string;
-	type: "oven_v1" | "oven_v2";
+	type: 'oven_v1' | 'oven_v2';
 }
 
 export interface EventUserStatePayload {
@@ -47,7 +39,7 @@ export interface EventUserStatePayload {
 
 export interface EventApoStatePayload {
 	cookerId: string;
-	type: "oven_v1" | "oven_v2";
+	type: 'oven_v1' | 'oven_v2';
 	state: ApoState;
 }
 
@@ -75,7 +67,7 @@ export interface SystemInfo {
 
 export interface OvenState {
 	mode: string; // 'idle', 'cook', etc.
-	temperatureUnit: "F" | "C";
+	temperatureUnit: 'F' | 'C';
 	processedCommandIds: string[];
 }
 
@@ -210,6 +202,7 @@ export interface BaseCommand {
 	payload: {
 		id: string;
 		type: string;
+		// eslint-disable-next-line @typescript-eslint/no-explicit-any
 		payload?: any;
 	};
 }
@@ -221,14 +214,14 @@ export interface StartCookV1Options {
 
 // Start Cook Command - Oven v1
 export interface StartCookV1Stage {
-	stepType: "stage";
+	stepType: 'stage';
 	id: string;
 	title: string;
 	description: string;
-	type: "preheat" | "cook";
+	type: 'preheat' | 'cook';
 	userActionRequired: boolean;
 	temperatureBulbs?: {
-		mode: "dry" | "wet";
+		mode: 'dry' | 'wet';
 		dry?: {
 			setpoint: {
 				celsius: number;
@@ -254,9 +247,9 @@ export interface StartCookV1Stage {
 		open: boolean;
 	};
 	rackPosition?: number; // 1-5
-	stageTransitionType?: "automatic" | "manual";
+	stageTransitionType?: 'automatic' | 'manual';
 	steamGenerators?: {
-		mode: "idle" | "relative-humidity" | "steam-percentage";
+		mode: 'idle' | 'relative-humidity' | 'steam-percentage';
 		relativeHumidity?: {
 			setpoint: number; // 0-100
 		};
@@ -266,7 +259,7 @@ export interface StartCookV1Stage {
 	};
 	timer?: {
 		initial: number; // seconds
-		startType?: "immediately" | "when-preheated" | "manual";
+		startType?: 'immediately' | 'when-preheated' | 'manual';
 	};
 	probe?: {
 		setpoint: {
@@ -285,21 +278,21 @@ export interface StartCookV2Options {
 export interface StartCookV2Stage {
 	id: string;
 	do: {
-		type: "cook";
+		type: 'cook';
 		fan?: { speed: number };
 		heatingElements?: {
 			top: { on: boolean };
 			bottom: { on: boolean };
 			rear: { on: boolean };
 		};
-		exhaustVent?: { state: "open" | "closed" };
+		exhaustVent?: { state: 'open' | 'closed' };
 		temperatureBulbs?: {
-			mode: "dry" | "wet";
+			mode: 'dry' | 'wet';
 			dry?: { setpoint: { celsius: number } };
 			wet?: { setpoint: { celsius: number } };
 		};
 		steamGenerators?: {
-			mode: "idle" | "relative-humidity" | "steam-percentage";
+			mode: 'idle' | 'relative-humidity' | 'steam-percentage';
 			relativeHumidity?: { setpoint: number };
 			steamPercentage?: { setpoint: number };
 		};
@@ -307,6 +300,7 @@ export interface StartCookV2Stage {
 			initial: number;
 			entry?: {
 				conditions: {
+					// eslint-disable-next-line @typescript-eslint/no-explicit-any
 					and: Record<string, any>;
 				};
 			};
@@ -314,11 +308,13 @@ export interface StartCookV2Stage {
 	};
 	exit?: {
 		conditions: {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			and: Record<string, any>;
 		};
 	};
 	entry?: {
 		conditions: {
+			// eslint-disable-next-line @typescript-eslint/no-explicit-any
 			and: Record<string, any>;
 		};
 	};

@@ -1,8 +1,8 @@
-import Database from "better-sqlite3";
-import { building } from "$app/environment";
-import { mkdirSync } from "fs";
-import { dirname } from "path";
-import type { DeviceInfo } from "./anova";
+import Database from 'better-sqlite3';
+import { building } from '$app/environment';
+import { mkdirSync } from 'fs';
+import { dirname } from 'path';
+import type { DeviceInfo } from './anova';
 
 // Server-only database module
 // This file should only be imported in server-side code
@@ -12,22 +12,22 @@ let db: Database.Database | null = null;
 function getDatabase(): Database.Database {
 	if (db) return db;
 
-	const dbPath = process.env.DATABASE_PATH || "./data/anova.db";
+	const dbPath = process.env.DATABASE_PATH || './data/anova.db';
 
 	// Create directory if it doesn't exist
 	try {
 		const dir = dirname(dbPath);
 		mkdirSync(dir, { recursive: true });
 	} catch (error) {
-		// Directory might already exist, ignore error
+		console.log(error);
 	}
 
 	// better-sqlite3 will create the database file automatically if it doesn't exist
 	db = new Database(dbPath);
 
 	// Enable WAL mode for better concurrency
-	db.pragma("journal_mode = WAL");
-	db.pragma("foreign_keys = ON");
+	db.pragma('journal_mode = WAL');
+	db.pragma('foreign_keys = ON');
 
 	// Create tokens table if it doesn't exist
 	db.exec(`
@@ -59,17 +59,16 @@ function getDatabase(): Database.Database {
  */
 export function getToken(): string | null {
 	// Check environment variable first
-	const envToken =
-		process.env.ANOVA_TOKEN || process.env.ANOVA_PERSONAL_ACCESS_TOKEN;
+	const envToken = process.env.ANOVA_TOKEN || process.env.ANOVA_PERSONAL_ACCESS_TOKEN;
 	if (envToken) {
 		return envToken;
 	}
 
 	// Fall back to database
 	const database = getDatabase();
-	const row = database
-		.prepare("SELECT token FROM tokens WHERE id = ?")
-		.get("default") as { token: string } | undefined;
+	const row = database.prepare('SELECT token FROM tokens WHERE id = ?').get('default') as
+		| { token: string }
+		| undefined;
 	return row?.token || null;
 }
 
@@ -89,10 +88,8 @@ export function isTokenFromEnv(): boolean {
 export function setToken(token: string): void {
 	const database = getDatabase();
 	database
-		.prepare(
-			"INSERT OR REPLACE INTO tokens (id, token, updated_at) VALUES (?, ?, unixepoch())",
-		)
-		.run("default", token);
+		.prepare('INSERT OR REPLACE INTO tokens (id, token, updated_at) VALUES (?, ?, unixepoch())')
+		.run('default', token);
 }
 
 export function hasToken(): boolean {
@@ -103,7 +100,7 @@ export function saveDevice(device: DeviceInfo): void {
 	const database = getDatabase();
 	database
 		.prepare(
-			"INSERT OR REPLACE INTO devices (cookerId, name, pairedAt, type, updated_at) VALUES (?, ?, ?, ?, unixepoch())",
+			'INSERT OR REPLACE INTO devices (cookerId, name, pairedAt, type, updated_at) VALUES (?, ?, ?, ?, unixepoch())'
 		)
 		.run(device.cookerId, device.name, device.pairedAt, device.type);
 }
@@ -111,7 +108,7 @@ export function saveDevice(device: DeviceInfo): void {
 export function saveDevices(devices: DeviceInfo[]): void {
 	const database = getDatabase();
 	const stmt = database.prepare(
-		"INSERT OR REPLACE INTO devices (cookerId, name, pairedAt, type, updated_at) VALUES (?, ?, ?, ?, unixepoch())",
+		'INSERT OR REPLACE INTO devices (cookerId, name, pairedAt, type, updated_at) VALUES (?, ?, ?, ?, unixepoch())'
 	);
 	const transaction = database.transaction((devices: DeviceInfo[]) => {
 		for (const device of devices) {
@@ -124,9 +121,7 @@ export function saveDevices(devices: DeviceInfo[]): void {
 export function getDevices(): DeviceInfo[] {
 	const database = getDatabase();
 	const rows = database
-		.prepare(
-			"SELECT cookerId, name, pairedAt, type FROM devices ORDER BY updated_at DESC",
-		)
+		.prepare('SELECT cookerId, name, pairedAt, type FROM devices ORDER BY updated_at DESC')
 		.all() as Array<{
 		cookerId: string;
 		name: string;
@@ -137,13 +132,13 @@ export function getDevices(): DeviceInfo[] {
 		cookerId: row.cookerId,
 		name: row.name,
 		pairedAt: row.pairedAt,
-		type: row.type === "oven_v1" ? "oven_v1" : "oven_v2",
+		type: row.type === 'oven_v1' ? 'oven_v1' : 'oven_v2'
 	}));
 }
 
 // Cleanup on process exit
 if (!building) {
-	process.on("exit", () => {
+	process.on('exit', () => {
 		if (db) {
 			db.close();
 		}

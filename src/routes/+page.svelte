@@ -7,8 +7,6 @@
 		createSetProbeV1Command,
 		createSetProbeV2Command,
 		createSetTemperatureUnitCommand,
-		type StartCookV1Stage,
-		type StartCookV2Stage
 	} from '$lib/anova.js';
 	import TemperatureControl from '$lib/components/TemperatureControl.svelte';
 	import HeatingElements from '$lib/components/HeatingElements.svelte';
@@ -18,8 +16,7 @@
 	import CurrentState from '$lib/components/CurrentState.svelte';
 	import ActionsPanel from '$lib/components/ActionsPanel.svelte';
 	import { wsStore } from '$lib/stores/websocket.svelte.js';
-
-	let { data } = $props();
+	import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types.js';
 
 	// Use device from WebSocket store
 	let deviceId = $derived($wsStore.deviceId);
@@ -55,10 +52,6 @@
 
 	// Rack position
 	let rackPosition = $state(3);
-
-	// Multi-stage cooking
-	let multiStageEnabled = $state(false);
-	let stages = $state<Array<{ id: string; title: string }>>([{ id: generateUUID(), title: 'Stage 1' }]);
 
 	// Computed values
 	let temperatureFahrenheit = $derived(celsiusToFahrenheit(temperatureCelsius));
