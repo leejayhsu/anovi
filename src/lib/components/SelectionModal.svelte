@@ -18,12 +18,38 @@
 		onSelect(value);
 		onClose();
 	}
+
+	function handleOverlayKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			onClose();
+		}
+	}
+
+	function handleContainerKeydown(event: KeyboardEvent) {
+		// Stop propagation for keyboard events on the container
+		event.stopPropagation();
+	}
 </script>
 
-<div class="modal-overlay" onclick={onClose}>
-	<div class="modal-container" onclick={(e) => e.stopPropagation()}>
+<div
+	class="modal-overlay"
+	role="button"
+	tabindex="0"
+	aria-label="Close modal"
+	onclick={onClose}
+	onkeydown={handleOverlayKeydown}
+>
+	<div
+		class="modal-container"
+		role="dialog"
+		tabindex="-1"
+		aria-modal="true"
+		aria-labelledby="modal-title"
+		onclick={(e) => e.stopPropagation()}
+		onkeydown={handleContainerKeydown}
+	>
 		<div class="modal-header">
-			<h3>{title}</h3>
+			<h3 id="modal-title">{title}</h3>
 			<button class="close-btn" onclick={onClose}>×</button>
 		</div>
 
