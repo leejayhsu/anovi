@@ -2,6 +2,7 @@
 	import { wsStore } from '$lib/stores/websocket.svelte.js';
 	import { createStartCookV1Command, createStopCookCommand } from '$lib/anova.js';
 	import type { StartCookV1Stage } from '$lib/types';
+	import { OctagonX, Play } from 'lucide-svelte';
 
 	interface Props {
 		deviceId: string;
@@ -71,23 +72,52 @@
 {/if}
 
 <section class="card">
-	<h2>Actions</h2>
-	<div class="button-group-vertical">
-		<button
-			type="button"
-			class="btn-primary btn-action"
-			disabled={!hasActiveHeatingElement || !wsConnected}
-			onclick={handleStartCook}
+	<div class="actions-icons">
+		<span
+			class="action-icon"
+			class:disabled={!hasActiveHeatingElement || !wsConnected}
+			onclick={hasActiveHeatingElement && wsConnected ? handleStartCook : undefined}
+			role="button"
+			tabindex="0"
 		>
-			Start Cook
-		</button>
-		<button
-			type="button"
-			class="btn-danger btn-action"
-			disabled={!wsConnected}
-			onclick={handleStopCook}
+			<Play size={48} color="#28a745" />
+		</span>
+		<span
+			class="action-icon"
+			class:disabled={!wsConnected}
+			onclick={wsConnected ? handleStopCook : undefined}
+			role="button"
+			tabindex="0"
 		>
-			Stop Cook
-		</button>
+			<OctagonX size={48} color="#dc3545" />
+		</span>
 	</div>
 </section>
+
+<style>
+	.actions-icons {
+		display: flex;
+		gap: 2rem;
+		justify-content: center;
+		padding: 1rem 0;
+	}
+
+	.action-icon {
+		cursor: pointer;
+		transition: all 0.2s;
+		display: inline-flex;
+	}
+
+	.action-icon.disabled {
+		opacity: 0.4;
+		cursor: not-allowed;
+	}
+
+	.action-icon:not(.disabled):hover {
+		transform: scale(1.1);
+	}
+
+	.action-icon:not(.disabled):active {
+		transform: scale(0.95);
+	}
+</style>

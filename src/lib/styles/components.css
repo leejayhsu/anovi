@@ -202,21 +202,6 @@ button:active {
 	cursor: not-allowed;
 }
 
-.button-group-vertical {
-	display: flex;
-	flex-direction: column;
-	gap: 1rem;
-}
-
-.button-group-vertical button,
-.btn-action {
-	width: 100%;
-	padding: 1.25rem 1.5rem;
-	font-size: 1.125rem;
-	font-weight: 600;
-	min-height: 64px;
-}
-
 /* Status Messages */
 .success {
 	color: #28a745;
