@@ -24,9 +24,9 @@
 	let showTemperatureDialpad = $state(false);
 </script>
 
-<section class="card">
+<div class="temperature-control">
 	<div class="header">
-		<h2>Temp</h2>
+		<h3>Temp</h3>
 		<div class="toggle-group">
 			<button
 				type="button"
@@ -67,7 +67,7 @@
 			</span>
 		</button>
 	</div>
-</section>
+</div>
 
 <style>
 	.header {
@@ -77,7 +77,7 @@
 		margin-bottom: 1.5rem;
 	}
 
-	.header h2 {
+	.header h3 {
 		margin: 0;
 	}
 

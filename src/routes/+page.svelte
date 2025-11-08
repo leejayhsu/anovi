@@ -283,15 +283,30 @@
 <div class="container">
 	<div class="layout-wrapper">
 		<div class="main-content">
-			<TemperatureControl
-				{temperatureMode}
-				{temperatureUnit}
-				{displayTemperature}
-				onModeChange={(mode) => (temperatureMode = mode)}
-				onTemperatureChange={handleTemperatureChange}
-				{dialpadMin}
-				{dialpadMax}
-			/>
+			<section class="card">
+				<h2>Temperature</h2>
+				<TemperatureControl
+					{temperatureMode}
+					{temperatureUnit}
+					{displayTemperature}
+					onModeChange={(mode) => (temperatureMode = mode)}
+					onTemperatureChange={handleTemperatureChange}
+					{dialpadMin}
+					{dialpadMax}
+				/>
+
+				<div class="divider"></div>
+
+				<ProbeControl
+					{probeEnabled}
+					{temperatureUnit}
+					{displayProbeTemperature}
+					onEnabledChange={(enabled) => (probeEnabled = enabled)}
+					onTemperatureChange={handleProbeTemperatureChange}
+					dialpadMin={probeDialpadMin}
+					dialpadMax={probeDialpadMax}
+				/>
+			</section>
 
 			<section class="card">
 				<h2>Heating & Steam</h2>
@@ -318,16 +333,6 @@
 				onEnabledChange={(enabled) => (timerEnabled = enabled)}
 				onSecondsChange={(seconds) => (timerSeconds = seconds)}
 				onStartTypeChange={(startType) => (timerStartType = startType)}
-			/>
-
-			<ProbeControl
-				{probeEnabled}
-				{temperatureUnit}
-				{displayProbeTemperature}
-				onEnabledChange={(enabled) => (probeEnabled = enabled)}
-				onTemperatureChange={handleProbeTemperatureChange}
-				dialpadMin={probeDialpadMin}
-				dialpadMax={probeDialpadMax}
 			/>
 		</div>
 

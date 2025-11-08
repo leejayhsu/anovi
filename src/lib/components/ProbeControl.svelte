@@ -25,9 +25,9 @@
 	let showProbeDialpad = $state(false);
 </script>
 
-<section class="card">
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
-		<h2 style="margin: 0;">Temperature Probe</h2>
+<div class="probe-control">
+	<div class="header">
+		<h3>Temperature Probe</h3>
 		<button
 			type="button"
 			class="icon-button"
@@ -56,9 +56,20 @@
 			</span>
 		</button>
 	</div>
-</section>
+</div>
 
 <style>
+	.header {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		margin-bottom: 1rem;
+	}
+
+	.header h3 {
+		margin: 0;
+	}
+
 	.icon-button {
 		background: none;
 		border: 2px solid var(--border-color, #ccc);
