@@ -116,6 +116,20 @@
 	.icon-button:active {
 		transform: scale(0.95);
 	}
+
+	.temperature-button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
+
+	.temperature-button:disabled .temperature-value {
+		color: var(--text-secondary, #999);
+	}
+
+	.toggle-button:disabled {
+		opacity: 0.5;
+		cursor: not-allowed;
+	}
 </style>
 
 {#if showTimerSelector}
