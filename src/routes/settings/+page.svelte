@@ -158,7 +158,7 @@
 					<label for="device-select">Select Device</label>
 					<select id="device-select" bind:value={deviceId} onchange={updateDeviceConfig}>
 						<option value="">-- Select a device --</option>
-						{#each data.discoveredDevices as device}
+						{#each data.discoveredDevices as device (device.cookerId)}
 							<option value={device.cookerId}>
 								{device.name} ({device.type === 'oven_v1' ? 'v1' : 'v2'})
 							</option>

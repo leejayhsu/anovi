@@ -1,6 +1,7 @@
 <script lang="ts">
 	import favicon from '$lib/assets/favicon.svg';
 	import { page } from '$app/stores';
+	import { resolve } from '$app/paths';
 	import '$lib/styles/components.css';
 
 	let { children, data } = $props();
@@ -12,7 +13,7 @@
 
 <nav class="header">
 	<div class="header-content">
-		<a href="/" class="logo">Anova Oven Remote Control</a>
+		<a href={resolve('/')} class="logo">Anova Oven Remote Control</a>
 		<div class="header-right">
 			<span class="token-status" class:configured={data.tokenStatus.hasToken}>
 				{data.tokenStatus.hasToken
@@ -21,7 +22,7 @@
 						: 'Token configured ✓'
 					: 'Token not configured'}
 			</span>
-			<a href="/settings" class="settings-link" class:active={$page.url.pathname === '/settings'}>
+			<a href={resolve('/settings')} class="settings-link" class:active={$page.url.pathname === '/settings'}>
 				⚙️ Settings
 			</a>
 		</div>

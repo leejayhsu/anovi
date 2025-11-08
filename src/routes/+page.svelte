@@ -293,11 +293,6 @@
 		lastResult = result;
 	}
 
-	// Get temperature display value for dialpad
-	let dialpadTemperature = $derived(
-		temperatureUnit === 'C' ? temperatureCelsius : temperatureFahrenheit
-	);
-
 	// Get temperature min/max for dialpad
 	let dialpadMin = $derived(
 		temperatureUnit === 'C'
