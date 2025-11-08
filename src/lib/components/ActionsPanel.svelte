@@ -1,17 +1,12 @@
 <script lang="ts">
 	import { wsStore } from '$lib/stores/websocket.svelte.js';
-	import {
-		createStartCookV1Command,
-		createStartCookV2Command,
-		createStopCookCommand
-	} from '$lib/anova.js';
-	import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types';
+	import { createStartCookV1Command, createStopCookCommand } from '$lib/anova.js';
+	import type { StartCookV1Stage } from '$lib/types';
 
 	interface Props {
 		deviceId: string;
-		deviceVersion: 'v1' | 'v2';
 		hasActiveHeatingElement: boolean;
-		buildStageData: () => StartCookV1Stage | StartCookV2Stage;
+		buildStageData: () => StartCookV1Stage;
 		lastResult: { success: boolean; error?: string } | null;
 		wsConnected: boolean;
 		wsError: string | null;
@@ -20,7 +15,6 @@
 
 	let {
 		deviceId,
-		deviceVersion,
 		hasActiveHeatingElement,
 		buildStageData,
 		lastResult,
@@ -29,13 +23,11 @@
 		onResultChange
 	}: Props = $props();
 
+	// Start cook command for Oven v1
 	function handleStartCook() {
 		try {
 			const stageData = buildStageData();
-			const command =
-				deviceVersion === 'v1'
-					? createStartCookV1Command({ deviceId, stages: [stageData as StartCookV1Stage] })
-					: createStartCookV2Command({ deviceId, stages: [stageData as StartCookV2Stage] });
+			const command = createStartCookV1Command({ deviceId, stages: [stageData] });
 
 			const sent = wsStore.sendCommand(command);
 			if (sent) {

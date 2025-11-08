@@ -2,13 +2,13 @@ import { writable } from 'svelte/store';
 
 export interface DeviceConfig {
 	deviceId: string;
-	deviceVersion: 'v1' | 'v2';
+	deviceVersion: 'v1'; // Hardcoded to v1 - only supporting Oven v1
 }
 
 function createDeviceStore() {
 	const { subscribe, set, update } = writable<DeviceConfig>({
 		deviceId: '',
-		deviceVersion: 'v2'
+		deviceVersion: 'v1'
 	});
 
 	// Load from localStorage on initialization

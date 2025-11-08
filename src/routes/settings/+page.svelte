@@ -7,7 +7,6 @@
 
 	// Device configuration from store
 	let deviceId = $state('');
-	let deviceVersion = $state<'v1' | 'v2'>('v2');
 	let lastResult = $state<{ success: boolean; error?: string } | null>(null);
 	let tokenInput = $state('');
 	let showTokenForm = $state(false);
@@ -22,37 +21,21 @@
 	$effect(() => {
 		const unsubscribe = deviceConfig.subscribe((config) => {
 			deviceId = config.deviceId;
-			deviceVersion = config.deviceVersion;
 		});
 		return unsubscribe;
 	});
 
-	// Auto-select device version based on discovered devices
+	// Auto-select device ID from discovered devices (Oven v1 only)
 	$effect(() => {
 		if (data.discoveredDevices && data.discoveredDevices.length > 0 && !deviceId) {
 			const firstDevice = data.discoveredDevices[0];
 			deviceId = firstDevice.cookerId;
-			deviceVersion = firstDevice.type === 'oven_v1' ? 'v1' : 'v2';
-			deviceConfig.set({ deviceId, deviceVersion });
-		}
-	});
-
-	// Update device version when device ID changes
-	$effect(() => {
-		if (deviceId && data.discoveredDevices) {
-			const selectedDevice = data.discoveredDevices.find((d) => d.cookerId === deviceId);
-			if (selectedDevice) {
-				const version = selectedDevice.type === 'oven_v1' ? 'v1' : 'v2';
-				if (deviceVersion !== version) {
-					deviceVersion = version;
-					deviceConfig.set({ deviceId, deviceVersion });
-				}
-			}
+			deviceConfig.set({ deviceId, deviceVersion: 'v1' });
 		}
 	});
 
 	function updateDeviceConfig() {
-		deviceConfig.set({ deviceId, deviceVersion });
+		deviceConfig.set({ deviceId, deviceVersion: 'v1' });
 	}
 </script>
 
@@ -131,6 +114,9 @@
 		<!-- Device Configuration -->
 		<section class="card">
 			<h2>Device Configuration</h2>
+			<p class="helper-text" style="margin-bottom: 1rem;">
+				This application only supports Anova Precision Oven v1.
+			</p>
 			{#if data.discoveredDevices && data.discoveredDevices.length > 0}
 				<div class="form-group">
 					<label for="device-select">Select Device</label>
@@ -153,13 +139,6 @@
 					placeholder="Enter device ID or select from discovered devices"
 					onblur={updateDeviceConfig}
 				/>
-			</div>
-			<div class="form-group">
-				<label for="device-version">Device Version</label>
-				<select id="device-version" bind:value={deviceVersion} onchange={updateDeviceConfig}>
-					<option value="v1">Oven v1</option>
-					<option value="v2">Oven v2</option>
-				</select>
 			</div>
 			{#if data.discoveredDevices && data.discoveredDevices.length === 0 && data.tokenStatus.hasToken}
 				<p class="helper-text">

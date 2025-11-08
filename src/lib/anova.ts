@@ -3,7 +3,7 @@
 // Token authentication is handled server-side via db.server.ts
 
 import { v4 as uuidv4 } from 'uuid';
-import type { BaseCommand, StartCookV1Options, StartCookV2Options } from './types';
+import type { BaseCommand, StartCookV1Options } from './types';
 
 // Generate UUID v4 - uses uuid library which works in both browser and Node.js
 export function generateUUID(): string {
@@ -20,6 +20,7 @@ export function fahrenheitToCelsius(fahrenheit: number): number {
 	return ((fahrenheit - 32) * 5) / 9;
 }
 
+// Create Start Cook Command - Assumes Oven v1
 export function createStartCookV1Command(options: StartCookV1Options): BaseCommand {
 	const cookId = generateUUID();
 	const stages = options.stages.map((stage) => ({
@@ -41,33 +42,6 @@ export function createStartCookV1Command(options: StartCookV1Options): BaseComma
 	};
 }
 
-export function createStartCookV2Command(options: StartCookV2Options): BaseCommand {
-	const cookId = generateUUID();
-	const stages = options.stages.map((stage) => ({
-		...stage,
-		id: stage.id || generateUUID()
-	}));
-
-	return {
-		command: 'CMD_APO_START',
-		requestId: generateUUID(),
-		payload: {
-			id: options.deviceId,
-			type: 'CMD_APO_START',
-			payload: {
-				stages,
-				cookId,
-				cookerId: options.deviceId,
-				cookableId: '',
-				title: '',
-				type: 'oven_v2',
-				originSource: 'api',
-				cookableType: 'manual'
-			}
-		}
-	};
-}
-
 // Stop Cook Command
 export function createStopCookCommand(deviceId: string): BaseCommand {
 	return {
@@ -80,7 +54,7 @@ export function createStopCookCommand(deviceId: string): BaseCommand {
 	};
 }
 
-// Set Probe Command - Oven v1
+// Set Probe Command - Assumes Oven v1 (requires both Celsius and Fahrenheit)
 export function createSetProbeV1Command(
 	deviceId: string,
 	setpointCelsius: number,
@@ -96,23 +70,6 @@ export function createSetProbeV1Command(
 				setpoint: {
 					celsius: setpointCelsius,
 					fahrenheit: setpointFahrenheit
-				}
-			}
-		}
-	};
-}
-
-// Set Probe Command - Oven v2
-export function createSetProbeV2Command(deviceId: string, setpointCelsius: number): BaseCommand {
-	return {
-		command: 'CMD_APO_SET_PROBE',
-		requestId: generateUUID(),
-		payload: {
-			id: deviceId,
-			type: 'CMD_APO_SET_PROBE',
-			payload: {
-				setpoint: {
-					celsius: setpointCelsius
 				}
 			}
 		}

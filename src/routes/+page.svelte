@@ -4,8 +4,7 @@
 		celsiusToFahrenheit,
 		fahrenheitToCelsius,
 		generateUUID,
-		createSetProbeV1Command,
-		createSetProbeV2Command
+		createSetProbeV1Command
 	} from '$lib/anova.js';
 	import TemperatureControl from '$lib/components/TemperatureControl.svelte';
 	import HeatingElements from '$lib/components/HeatingElements.svelte';
@@ -15,14 +14,13 @@
 	import CurrentState from '$lib/components/CurrentState.svelte';
 	import ActionsPanel from '$lib/components/ActionsPanel.svelte';
 	import { wsStore } from '$lib/stores/websocket.svelte.js';
-	import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types.js';
+	import type { StartCookV1Stage } from '$lib/types.js';
 
 	// Page data (includes temperature unit preference)
 	let { data } = $props();
 
 	// Use device from WebSocket store
 	let deviceId = $derived($wsStore.deviceId);
-	let deviceVersion = $state<'v1' | 'v2'>('v1'); // Set to v1 for your oven
 
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
@@ -73,115 +71,67 @@
 	// UI state
 	let lastResult = $state<{ success: boolean; error?: string } | null>(null);
 
-	// Build stage data for form submission
-	function buildStageData(): StartCookV1Stage | StartCookV2Stage {
-		if (deviceVersion === 'v1') {
-			return {
-				stepType: 'stage',
-				id: generateUUID(),
-				title: '',
-				description: '',
-				type: 'cook',
-				userActionRequired: false,
-				temperatureBulbs: {
-					mode: temperatureMode,
-					...(temperatureMode === 'dry'
-						? {
-								dry: {
-									setpoint: {
-										celsius: temperatureCelsius,
-										fahrenheit: temperatureFahrenheit
-									}
+	// Build stage data for form submission (Oven v1)
+	function buildStageData(): StartCookV1Stage {
+		return {
+			stepType: 'stage',
+			id: generateUUID(),
+			title: '',
+			description: '',
+			type: 'cook',
+			userActionRequired: false,
+			temperatureBulbs: {
+				mode: temperatureMode,
+				...(temperatureMode === 'dry'
+					? {
+							dry: {
+								setpoint: {
+									celsius: temperatureCelsius,
+									fahrenheit: temperatureFahrenheit
 								}
 							}
-						: {
-								wet: {
-									setpoint: {
-										celsius: temperatureCelsius,
-										fahrenheit: temperatureFahrenheit
-									}
+						}
+					: {
+							wet: {
+								setpoint: {
+									celsius: temperatureCelsius,
+									fahrenheit: temperatureFahrenheit
 								}
-							})
-				},
-				heatingElements: {
-					top: { on: topElement },
-					bottom: { on: bottomElement },
-					rear: { on: rearElement }
-				},
-				fan: { speed: fanSpeed },
-				vent: { open: ventOpen },
-				rackPosition,
-				stageTransitionType: 'automatic',
-				...(steamMode !== 'idle' && {
-					steamGenerators: {
-						mode: steamMode,
-						...(steamMode === 'relative-humidity'
-							? { relativeHumidity: { setpoint: steamSetpoint } }
-							: { steamPercentage: { setpoint: steamSetpoint } })
-					}
-				}),
-				...(timerEnabled && {
-					timer: {
-						initial: timerSeconds,
-						startType: timerStartType
-					}
-				}),
-				...(probeEnabled && {
-					probe: {
-						setpoint: {
-							celsius: probeSetpointCelsius,
-							fahrenheit: celsiusToFahrenheit(probeSetpointCelsius)
-						}
-					}
-				})
-			} as StartCookV1Stage;
-		} else {
-			return {
-				id: generateUUID(),
-				do: {
-					type: 'cook',
-					fan: { speed: fanSpeed },
-					heatingElements: {
-						top: { on: topElement },
-						bottom: { on: bottomElement },
-						rear: { on: rearElement }
-					},
-					exhaustVent: { state: ventOpen ? 'open' : 'closed' },
-					temperatureBulbs: {
-						mode: temperatureMode,
-						...(temperatureMode === 'dry'
-							? { dry: { setpoint: { celsius: temperatureCelsius } } }
-							: { wet: { setpoint: { celsius: temperatureCelsius } } })
-					},
-					...(steamMode !== 'idle' && {
-						steamGenerators: {
-							mode: steamMode,
-							...(steamMode === 'relative-humidity'
-								? { relativeHumidity: { setpoint: steamSetpoint } }
-								: { steamPercentage: { setpoint: steamSetpoint } })
-						}
-					}),
-					...(timerEnabled && {
-						timer: {
-							initial: timerSeconds
-						}
-					})
-				},
-				exit: { conditions: { and: {} } },
-				entry: {
-					conditions: {
-						and: {
-							[`nodes.temperatureBulbs.${temperatureMode}.current.celsius`]: {
-								'>=': temperatureCelsius
 							}
-						}
+						})
+			},
+			heatingElements: {
+				top: { on: topElement },
+				bottom: { on: bottomElement },
+				rear: { on: rearElement }
+			},
+			fan: { speed: fanSpeed },
+			vent: { open: ventOpen },
+			rackPosition,
+			stageTransitionType: 'automatic',
+			...(steamMode !== 'idle' && {
+				steamGenerators: {
+					mode: steamMode,
+					...(steamMode === 'relative-humidity'
+						? { relativeHumidity: { setpoint: steamSetpoint } }
+						: { steamPercentage: { setpoint: steamSetpoint } })
+				}
+			}),
+			...(timerEnabled && {
+				timer: {
+					initial: timerSeconds,
+					startType: timerStartType
+				}
+			}),
+			...(probeEnabled && {
+				probe: {
+					setpoint: {
+						celsius: probeSetpointCelsius,
+						fahrenheit: celsiusToFahrenheit(probeSetpointCelsius)
 					}
-				},
-				title: '',
-				description: '',
-				rackPosition
-			} as StartCookV2Stage;
-		}
+				}
+			})
+		};
 	}
 
 	// Handle heating element toggle - prevent turning off the last active element
@@ -222,21 +172,17 @@
 		}
 	}
 
-	// Automatically set probe when enabled or temperature changes
+	// Automatically set probe when enabled or temperature changes (Oven v1)
 	$effect(() => {
 		if (probeEnabled && deviceId && probeSetpointCelsius && $wsStore.connected) {
 			// Debounce the command to avoid too many requests
 			const timeoutId = setTimeout(() => {
 				try {
-					// Create command based on device version
-					const command =
-						deviceVersion === 'v1'
-							? createSetProbeV1Command(
-									deviceId,
-									probeSetpointCelsius,
-									celsiusToFahrenheit(probeSetpointCelsius)
-								)
-							: createSetProbeV2Command(deviceId, probeSetpointCelsius);
+					const command = createSetProbeV1Command(
+						deviceId,
+						probeSetpointCelsius,
+						celsiusToFahrenheit(probeSetpointCelsius)
+					);
 
 					// Send command via WebSocket
 					const sent = wsStore.sendCommand(command);
@@ -387,7 +333,6 @@
 		<aside class="actions-sidebar">
 			<ActionsPanel
 				{deviceId}
-				{deviceVersion}
 				{hasActiveHeatingElement}
 				{buildStageData}
 				{lastResult}
