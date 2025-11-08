@@ -106,17 +106,18 @@
 			},
 			fan: { speed: fanSpeed },
 			vent: { open: ventOpen },
-			rackPosition,
-			stageTransitionType: 'automatic',
-			// Steam control: 0 = idle, >0 = relative-humidity
-			steamGenerators:
-				steamSetpoint === 0
-					? { mode: 'idle' }
-					: {
-							mode: 'relative-humidity',
-							relativeHumidity: { setpoint: steamSetpoint }
-						},
-			...(timerEnabled && {
+		rackPosition,
+		stageTransitionType: 'automatic',
+		// Steam control: Only include steamGenerators when humidity is active (>0)
+		// NOTE: The Anova API requires completely omitting the steamGenerators field when idle,
+		// rather than sending { mode: 'idle' }. Sending { mode: 'idle' } breaks the command.
+		...(steamSetpoint > 0 && {
+			steamGenerators: {
+				mode: 'relative-humidity',
+				relativeHumidity: { setpoint: steamSetpoint }
+			}
+		}),
+		...(timerEnabled && {
 				timer: {
 					initial: timerSeconds,
 					startType: timerStartType
