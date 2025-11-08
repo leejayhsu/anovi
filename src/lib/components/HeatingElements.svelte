@@ -14,14 +14,14 @@
 <section class="card">
 	<h2>Heating Elements</h2>
 	<div class="form-group">
-		<div class="toggle-group toggle-group-vertical">
+		<div class="toggle-group">
 			<button
 				type="button"
 				class="toggle-button"
 				class:active={topElement}
 				onclick={() => onToggle('top')}
 			>
-				Top Element
+				Top
 			</button>
 			<button
 				type="button"
@@ -29,7 +29,7 @@
 				class:active={bottomElement}
 				onclick={() => onToggle('bottom')}
 			>
-				Bottom Element
+				Bottom
 			</button>
 			<button
 				type="button"
@@ -37,7 +37,7 @@
 				class:active={rearElement}
 				onclick={() => onToggle('rear')}
 			>
-				Rear Element
+				Rear
 			</button>
 		</div>
 		{#if !hasActiveHeatingElement}

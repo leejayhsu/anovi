@@ -3,6 +3,7 @@
 	import { page } from '$app/stores';
 	import { resolve } from '$app/paths';
 	import '$lib/styles/components.css';
+	import { Settings } from 'lucide-svelte';
 
 	let { children, data } = $props();
 </script>
@@ -15,19 +16,13 @@
 	<div class="header-content">
 		<a href={resolve('/')} class="logo">Anova Oven Remote Control</a>
 		<div class="header-right">
-			<span class="token-status" class:configured={data.tokenStatus.hasToken}>
-				{data.tokenStatus.hasToken
-					? data.tokenStatus.isFromEnv
-						? 'Token configured (env) ✓'
-						: 'Token configured ✓'
-					: 'Token not configured'}
-			</span>
 			<a
 				href={resolve('/settings')}
 				class="settings-link"
 				class:active={$page.url.pathname === '/settings'}
 			>
-				⚙️ Settings
+				<Settings size={20} />
+				<span>Settings</span>
 			</a>
 		</div>
 	</div>
@@ -75,19 +70,6 @@
 		gap: 1rem;
 	}
 
-	.token-status {
-		font-size: 0.875rem;
-		color: #666;
-		font-family:
-			system-ui,
-			-apple-system,
-			sans-serif;
-	}
-
-	.token-status.configured {
-		color: #28a745;
-	}
-
 	.settings-link {
 		padding: 0.5rem 1rem;
 		border-radius: 6px;
@@ -99,6 +81,7 @@
 		min-height: 44px;
 		display: flex;
 		align-items: center;
+		gap: 0.5rem;
 		font-family:
 			system-ui,
 			-apple-system,

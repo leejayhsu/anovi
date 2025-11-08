@@ -12,7 +12,7 @@
 <section class="card">
 	<h2>Steam Control</h2>
 	<div class="form-group">
-		<div class="toggle-group toggle-group-vertical">
+		<div class="toggle-group">
 			<button
 				type="button"
 				class="toggle-button"
@@ -29,14 +29,7 @@
 			>
 				Relative Humidity
 			</button>
-			<button
-				type="button"
-				class="toggle-button"
-				class:active={steamMode === 'steam-percentage'}
-				onclick={() => onModeChange('steam-percentage')}
-			>
-				Steam Percentage
-			</button>
+			<!-- TODO: Let's not present steam percentage mode for now, it is confusing for users -->
 		</div>
 	</div>
 	{#if steamMode !== 'idle'}

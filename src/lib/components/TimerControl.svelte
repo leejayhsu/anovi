@@ -57,7 +57,7 @@
 	</div>
 	<div class="form-group">
 		<label>Start Type</label>
-		<div class="toggle-group toggle-group-vertical">
+		<div class="toggle-group">
 			<button
 				type="button"
 				class="toggle-button"
@@ -76,15 +76,7 @@
 			>
 				When Preheated
 			</button>
-			<button
-				type="button"
-				class="toggle-button"
-				class:active={timerStartType === 'manual'}
-				onclick={() => onStartTypeChange('manual')}
-				disabled={!timerEnabled}
-			>
-				Manual
-			</button>
+			<!-- TODO: Let's not present manual start type for now, it is confusing for users -->
 		</div>
 	</div>
 </section>
