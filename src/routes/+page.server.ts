@@ -1,18 +1,20 @@
 // Server-side load function and form actions
-import { setToken, hasToken, isTokenFromEnv } from '$lib/db.server.js';
+import { setToken, hasToken, isTokenFromEnv, getTemperatureUnit } from '$lib/db.server.js';
 import * as anova from '$lib/anova.server.js';
 
 export async function load() {
 	const hasTokenValue = hasToken();
 	const isFromEnv = isTokenFromEnv();
 	const discoveredDevices = anova.getDiscoveredDevices();
+	const temperatureUnit = getTemperatureUnit();
 
 	return {
 		tokenStatus: {
 			hasToken: hasTokenValue,
 			isFromEnv
 		},
-		discoveredDevices
+		discoveredDevices,
+		temperatureUnit
 	};
 }
 

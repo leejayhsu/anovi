@@ -2,7 +2,7 @@ import Database from 'better-sqlite3';
 import { building } from '$app/environment';
 import { mkdirSync } from 'fs';
 import { dirname } from 'path';
-import type { DeviceInfo } from './anova';
+import type { DeviceInfo } from './types.js';
 
 // Server-only database module
 // This file should only be imported in server-side code
@@ -45,6 +45,15 @@ function getDatabase(): Database.Database {
 			name TEXT NOT NULL,
 			pairedAt TEXT NOT NULL,
 			type TEXT NOT NULL CHECK(type IN ('oven_v1', 'oven_v2')),
+			updated_at INTEGER NOT NULL DEFAULT (unixepoch())
+		)
+	`);
+
+	// Create settings table if it doesn't exist
+	db.exec(`
+		CREATE TABLE IF NOT EXISTS settings (
+			key TEXT PRIMARY KEY,
+			value TEXT NOT NULL,
 			updated_at INTEGER NOT NULL DEFAULT (unixepoch())
 		)
 	`);
@@ -134,6 +143,49 @@ export function getDevices(): DeviceInfo[] {
 		pairedAt: row.pairedAt,
 		type: row.type === 'oven_v1' ? 'oven_v1' : 'oven_v2'
 	}));
+}
+
+/**
+ * Get a setting value from the database
+ * @param key The setting key
+ * @param defaultValue The default value if the setting doesn't exist
+ * @returns The setting value or the default value
+ */
+export function getSetting(key: string, defaultValue: string): string {
+	const database = getDatabase();
+	const row = database.prepare('SELECT value FROM settings WHERE key = ?').get(key) as
+		| { value: string }
+		| undefined;
+	return row?.value || defaultValue;
+}
+
+/**
+ * Set a setting value in the database
+ * @param key The setting key
+ * @param value The setting value
+ */
+export function setSetting(key: string, value: string): void {
+	const database = getDatabase();
+	database
+		.prepare('INSERT OR REPLACE INTO settings (key, value, updated_at) VALUES (?, ?, unixepoch())')
+		.run(key, value);
+}
+
+/**
+ * Get the temperature unit preference
+ * @returns 'C' or 'F' (defaults to 'F')
+ */
+export function getTemperatureUnit(): 'C' | 'F' {
+	const unit = getSetting('temperatureUnit', 'F');
+	return unit === 'C' ? 'C' : 'F';
+}
+
+/**
+ * Set the temperature unit preference
+ * @param unit 'C' or 'F'
+ */
+export function setTemperatureUnit(unit: 'C' | 'F'): void {
+	setSetting('temperatureUnit', unit);
 }
 
 // Cleanup on process exit

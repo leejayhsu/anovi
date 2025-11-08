@@ -1,18 +1,26 @@
 // Server-side load function and form actions for settings page
-import { setToken, hasToken, isTokenFromEnv } from '$lib/db.server.js';
+import {
+	setToken,
+	hasToken,
+	isTokenFromEnv,
+	getTemperatureUnit,
+	setTemperatureUnit
+} from '$lib/db.server.js';
 import * as anova from '$lib/anova.server.js';
 
 export async function load() {
 	const hasTokenValue = hasToken();
 	const isFromEnv = isTokenFromEnv();
 	const discoveredDevices = anova.getDiscoveredDevices();
+	const temperatureUnit = getTemperatureUnit();
 
 	return {
 		tokenStatus: {
 			hasToken: hasTokenValue,
 			isFromEnv
 		},
-		discoveredDevices
+		discoveredDevices,
+		temperatureUnit
 	};
 }
 
@@ -46,6 +54,24 @@ export const actions = {
 		}
 
 		setToken(token);
+
+		return {
+			success: true
+		};
+	},
+
+	setTemperatureUnit: async ({ request }) => {
+		const data = await request.formData();
+		const unit = data.get('unit')?.toString();
+
+		if (unit !== 'C' && unit !== 'F') {
+			return {
+				success: false,
+				error: 'Invalid temperature unit'
+			};
+		}
+
+		setTemperatureUnit(unit);
 
 		return {
 			success: true

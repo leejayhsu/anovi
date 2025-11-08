@@ -11,6 +11,12 @@
 	let lastResult = $state<{ success: boolean; error?: string } | null>(null);
 	let tokenInput = $state('');
 	let showTokenForm = $state(false);
+	let temperatureUnit = $state<'C' | 'F'>(data.temperatureUnit);
+
+	// Update temperatureUnit when data changes
+	$effect(() => {
+		temperatureUnit = data.temperatureUnit;
+	});
 
 	// Sync with store
 	$effect(() => {
@@ -163,6 +169,41 @@
 			{/if}
 		</section>
 
+		<!-- Temperature Unit Preference -->
+		<section class="card">
+			<h2>Temperature Unit</h2>
+			<form
+				method="POST"
+				action="?/setTemperatureUnit"
+				use:enhance={() => {
+					return async ({ result, update }) => {
+						await update();
+						if (result.type === 'success' && result.data?.success) {
+							await invalidateAll();
+						} else if (result.type === 'failure' && result.data) {
+							lastResult = result.data as { success: boolean; error?: string };
+						}
+					};
+				}}
+			>
+				<div class="form-group">
+					<label for="temperature-unit">Preferred Temperature Unit</label>
+					<select
+						id="temperature-unit"
+						name="unit"
+						bind:value={temperatureUnit}
+						onchange={(e) => e.currentTarget.form?.requestSubmit()}
+					>
+						<option value="F">Fahrenheit (°F)</option>
+						<option value="C">Celsius (°C)</option>
+					</select>
+					<span class="helper-text">
+						This setting applies to all temperature controls throughout the app.
+					</span>
+				</div>
+			</form>
+		</section>
+
 		<!-- Last Result -->
 		{#if lastResult}
 			<section class="card">
@@ -235,7 +276,6 @@
 	}
 
 	.form-group input[type='text'],
-	.form-group input[type='number'],
 	.form-group input[type='password'],
 	.form-group select {
 		width: 100%;

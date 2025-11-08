@@ -6,7 +6,6 @@
 		temperatureUnit: 'C' | 'F';
 		displayTemperature: number;
 		onModeChange: (mode: 'dry' | 'wet') => void;
-		onUnitChange: (unit: 'C' | 'F') => void;
 		onTemperatureChange: (value: number) => void;
 		dialpadMin: number;
 		dialpadMax: number;
@@ -17,7 +16,6 @@
 		temperatureUnit,
 		displayTemperature,
 		onModeChange,
-		onUnitChange,
 		onTemperatureChange,
 		dialpadMin,
 		dialpadMax
@@ -46,27 +44,6 @@
 				onclick={() => onModeChange('wet')}
 			>
 				Wet
-			</button>
-		</div>
-	</div>
-	<div class="form-group">
-		<label>Temperature Unit</label>
-		<div class="toggle-group">
-			<button
-				type="button"
-				class="toggle-button"
-				class:active={temperatureUnit === 'C'}
-				onclick={() => onUnitChange('C')}
-			>
-				Celsius
-			</button>
-			<button
-				type="button"
-				class="toggle-button"
-				class:active={temperatureUnit === 'F'}
-				onclick={() => onUnitChange('F')}
-			>
-				Fahrenheit
 			</button>
 		</div>
 	</div>

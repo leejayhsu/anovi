@@ -5,8 +5,7 @@
 		fahrenheitToCelsius,
 		generateUUID,
 		createSetProbeV1Command,
-		createSetProbeV2Command,
-		createSetTemperatureUnitCommand
+		createSetProbeV2Command
 	} from '$lib/anova.js';
 	import TemperatureControl from '$lib/components/TemperatureControl.svelte';
 	import HeatingElements from '$lib/components/HeatingElements.svelte';
@@ -18,6 +17,9 @@
 	import { wsStore } from '$lib/stores/websocket.svelte.js';
 	import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types.js';
 
+	// Page data (includes temperature unit preference)
+	let { data } = $props();
+
 	// Use device from WebSocket store
 	let deviceId = $derived($wsStore.deviceId);
 	let deviceVersion = $state<'v1' | 'v2'>('v2'); // TODO: detect from device
@@ -25,7 +27,12 @@
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
 	let temperatureCelsius = $state(180);
-	let temperatureUnit = $state<'C' | 'F'>('F');
+	let temperatureUnit = $state<'C' | 'F'>(data.temperatureUnit);
+
+	// Update temperature unit when data changes
+	$effect(() => {
+		temperatureUnit = data.temperatureUnit;
+	});
 
 	// Heating elements
 	let topElement = $state(true);
@@ -48,7 +55,6 @@
 	// Probe settings
 	let probeEnabled = $state(false);
 	let probeSetpointCelsius = $state(65);
-	let probeTemperatureUnit = $state<'C' | 'F'>('F');
 
 	// Rack position
 	let rackPosition = $state(3);
@@ -61,7 +67,7 @@
 	let hasActiveHeatingElement = $derived(topElement || bottomElement || rearElement);
 	let probeSetpointFahrenheit = $derived(celsiusToFahrenheit(probeSetpointCelsius));
 	let displayProbeTemperature = $derived(
-		probeTemperatureUnit === 'C' ? probeSetpointCelsius : probeSetpointFahrenheit
+		temperatureUnit === 'C' ? probeSetpointCelsius : probeSetpointFahrenheit
 	);
 
 	// UI state
@@ -207,7 +213,7 @@
 	// Handle probe temperature input from dialpad
 	function handleProbeTemperatureChange(value: number) {
 		// Convert if needed based on current unit
-		if (probeTemperatureUnit === 'F') {
+		if (temperatureUnit === 'F') {
 			// User entered Fahrenheit, convert to Celsius
 			probeSetpointCelsius = fahrenheitToCelsius(value);
 		} else {
@@ -250,8 +256,8 @@
 	});
 
 	// Get probe temperature min/max for dialpad
-	let probeDialpadMin = $derived(probeTemperatureUnit === 'C' ? 1 : 33);
-	let probeDialpadMax = $derived(probeTemperatureUnit === 'C' ? 100 : 212);
+	let probeDialpadMin = $derived(temperatureUnit === 'C' ? 1 : 33);
+	let probeDialpadMax = $derived(temperatureUnit === 'C' ? 100 : 212);
 
 	// Handle temperature input from dialpad
 	function handleTemperatureChange(value: number) {
@@ -265,28 +271,6 @@
 		}
 	}
 
-	// Handle temperature unit change - automatically set on device
-	function handleUnitChange(newUnit: 'C' | 'F') {
-		temperatureUnit = newUnit;
-
-		// Automatically set the unit on the device if device is selected
-		if (deviceId && $wsStore.connected) {
-			try {
-				// Create and send command via WebSocket
-				const command = createSetTemperatureUnitCommand(deviceId, newUnit);
-				const sent = wsStore.sendCommand(command);
-
-				if (sent) {
-					lastResult = { success: true };
-				} else {
-					lastResult = { success: false, error: 'WebSocket not connected' };
-				}
-			} catch (error) {
-				console.error('Error setting temperature unit:', error);
-				lastResult = { success: false, error: 'Failed to set temperature unit' };
-			}
-		}
-	}
 
 	// Handle result change from child components
 	function handleResultChange(result: { success: boolean; error?: string } | null) {
@@ -359,7 +343,6 @@
 				{temperatureUnit}
 				{displayTemperature}
 				onModeChange={(mode) => (temperatureMode = mode)}
-				onUnitChange={handleUnitChange}
 				onTemperatureChange={handleTemperatureChange}
 				{dialpadMin}
 				{dialpadMax}
@@ -391,10 +374,9 @@
 
 			<ProbeControl
 				{probeEnabled}
-				{probeTemperatureUnit}
+				{temperatureUnit}
 				{displayProbeTemperature}
 				onEnabledChange={(enabled) => (probeEnabled = enabled)}
-				onUnitChange={(unit) => (probeTemperatureUnit = unit)}
 				onTemperatureChange={handleProbeTemperatureChange}
 				dialpadMin={probeDialpadMin}
 				dialpadMax={probeDialpadMax}
