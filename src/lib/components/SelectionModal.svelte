@@ -27,20 +27,20 @@
 			<button class="close-btn" onclick={onClose}>×</button>
 		</div>
 
-	<div class="modal-options">
-		{#each options as option (option.value)}
-			<button
-				class="option-btn"
-				class:selected={selectedValue === option.value}
-				onclick={() => handleSelect(option.value)}
-			>
-				{option.label}
-				{#if selectedValue === option.value}
-					<span class="checkmark">✓</span>
-				{/if}
-			</button>
-		{/each}
-	</div>
+		<div class="modal-options">
+			{#each options as option (option.value)}
+				<button
+					class="option-btn"
+					class:selected={selectedValue === option.value}
+					onclick={() => handleSelect(option.value)}
+				>
+					{option.label}
+					{#if selectedValue === option.value}
+						<span class="checkmark">✓</span>
+					{/if}
+				</button>
+			{/each}
+		</div>
 	</div>
 </div>
 

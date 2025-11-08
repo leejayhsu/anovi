@@ -22,7 +22,11 @@
 						: 'Token configured ✓'
 					: 'Token not configured'}
 			</span>
-			<a href={resolve('/settings')} class="settings-link" class:active={$page.url.pathname === '/settings'}>
+			<a
+				href={resolve('/settings')}
+				class="settings-link"
+				class:active={$page.url.pathname === '/settings'}
+			>
 				⚙️ Settings
 			</a>
 		</div>
