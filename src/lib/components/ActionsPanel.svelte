@@ -71,7 +71,7 @@
 	</section>
 {/if}
 
-<section class="card">
+<section class="card actions-card">
 	<div class="actions-icons">
 		<span
 			class="action-icon"
@@ -95,11 +95,15 @@
 </section>
 
 <style>
+	.actions-card {
+		padding: 0.75rem;
+	}
+
 	.actions-icons {
 		display: flex;
 		gap: 2rem;
 		justify-content: center;
-		padding: 1rem 0;
+		padding: 0.25rem 0;
 	}
 
 	.action-icon {
