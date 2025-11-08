@@ -42,15 +42,41 @@
 	function handleCancel() {
 		onClose();
 	}
+
+	function handleOverlayKeydown(event: KeyboardEvent) {
+		if (event.key === 'Escape') {
+			handleCancel();
+		}
+	}
+
+	function handleContainerKeydown(event: KeyboardEvent) {
+		// Stop propagation for keyboard events on the container
+		event.stopPropagation();
+	}
 </script>
 
 {#if isOpen}
-	<div class="dialpad-overlay" onclick={handleCancel}>
-		<div class="dialpad-container" onclick={(e) => e.stopPropagation()}>
-			<div class="dialpad-header">
-				<h3>Enter Temperature</h3>
-				<button class="close-btn" onclick={handleCancel}>×</button>
-			</div>
+	<div
+		class="dialpad-overlay"
+		role="button"
+		tabindex="0"
+		aria-label="Close dialpad"
+		onclick={handleCancel}
+		onkeydown={handleOverlayKeydown}
+	>
+		<div
+			class="dialpad-container"
+			role="dialog"
+			tabindex="-1"
+			aria-modal="true"
+			aria-labelledby="dialpad-title"
+			onclick={(e) => e.stopPropagation()}
+			onkeydown={handleContainerKeydown}
+		>
+		<div class="dialpad-header">
+			<h3 id="dialpad-title">Enter Temperature</h3>
+			<button class="close-btn" onclick={handleCancel}>×</button>
+		</div>
 
 			<div class="dialpad-display">
 				<span class="display-value">{displayValue || '0'}</span>
