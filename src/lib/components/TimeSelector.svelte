@@ -52,7 +52,7 @@
 				<h3>Set Timer Duration</h3>
 				<button class="close-btn" onclick={handleCancel}>×</button>
 			</div>
-			
+
 			<div class="time-selector-content">
 				<div class="time-column">
 					<button class="arrow-btn" onclick={() => adjustValue('hours', 'up')}>▲</button>
@@ -73,11 +73,13 @@
 					<button class="arrow-btn" onclick={() => adjustValue('seconds', 'down')}>▼</button>
 				</div>
 			</div>
-			
+
 			<div class="time-selector-display">
-				{hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}:{seconds.toString().padStart(2, '0')}
+				{hours.toString().padStart(2, '0')}:{minutes.toString().padStart(2, '0')}:{seconds
+					.toString()
+					.padStart(2, '0')}
 			</div>
-			
+
 			<div class="time-selector-actions">
 				<button class="action-btn cancel-btn" onclick={handleCancel}>Cancel</button>
 				<button class="action-btn done-btn" onclick={handleDone}>Done</button>
@@ -267,4 +269,3 @@
 		}
 	}
 </style>
-

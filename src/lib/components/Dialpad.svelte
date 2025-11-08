@@ -16,7 +16,7 @@
 	function handleDigit(digit: number) {
 		const newValue = displayValue + digit.toString();
 		const numValue = parseInt(newValue, 10);
-		
+
 		if (numValue <= max) {
 			displayValue = newValue;
 		}
@@ -51,14 +51,14 @@
 				<h3>Enter Temperature</h3>
 				<button class="close-btn" onclick={handleCancel}>×</button>
 			</div>
-			
+
 			<div class="dialpad-display">
 				<span class="display-value">{displayValue || '0'}</span>
 				{#if unit}
 					<span class="unit">{unit}</span>
 				{/if}
 			</div>
-			
+
 			<div class="dialpad-content">
 				<div class="dialpad-grid">
 					<button class="dialpad-btn" onclick={() => handleDigit(1)}>1</button>
@@ -74,15 +74,16 @@
 					<button class="dialpad-btn" onclick={() => handleDigit(0)}>0</button>
 					<button class="dialpad-btn backspace-btn" onclick={handleBackspace}>⌫</button>
 				</div>
-				
+
 				<div class="dialpad-actions">
 					<button class="action-btn done-btn" onclick={handleDone}>Done</button>
 					<button class="action-btn cancel-btn" onclick={handleCancel}>Cancel</button>
 				</div>
 			</div>
-			
+
 			<div class="dialpad-range">
-				Range: {min} - {max} {unit}
+				Range: {min} - {max}
+				{unit}
 			</div>
 		</div>
 	</div>
@@ -314,4 +315,3 @@
 		}
 	}
 </style>
-

@@ -26,7 +26,7 @@
 			<h3>{title}</h3>
 			<button class="close-btn" onclick={onClose}>×</button>
 		</div>
-		
+
 		<div class="modal-options">
 			{#each options as option}
 				<button
@@ -156,4 +156,3 @@
 		}
 	}
 </style>
-

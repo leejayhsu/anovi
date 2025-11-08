@@ -6,7 +6,7 @@
 		generateUUID,
 		createSetProbeV1Command,
 		createSetProbeV2Command,
-		createSetTemperatureUnitCommand,
+		createSetTemperatureUnitCommand
 	} from '$lib/anova.js';
 	import TemperatureControl from '$lib/components/TemperatureControl.svelte';
 	import HeatingElements from '$lib/components/HeatingElements.svelte';
@@ -185,19 +185,19 @@
 			bottom: bottomElement,
 			rear: rearElement
 		};
-		
+
 		// Calculate what the new state would be
 		const newState = { ...currentState };
 		newState[element] = !currentState[element];
-		
+
 		// Check if at least one would still be active
 		const wouldHaveActive = newState.top || newState.bottom || newState.rear;
-		
+
 		if (!wouldHaveActive) {
 			// Don't allow turning off the last active element
 			return;
 		}
-		
+
 		// Apply the change
 		if (element === 'top') topElement = !topElement;
 		if (element === 'bottom') bottomElement = !bottomElement;
@@ -223,10 +223,15 @@
 			const timeoutId = setTimeout(() => {
 				try {
 					// Create command based on device version
-					const command = deviceVersion === 'v1'
-						? createSetProbeV1Command(deviceId, probeSetpointCelsius, celsiusToFahrenheit(probeSetpointCelsius))
-						: createSetProbeV2Command(deviceId, probeSetpointCelsius);
-					
+					const command =
+						deviceVersion === 'v1'
+							? createSetProbeV1Command(
+									deviceId,
+									probeSetpointCelsius,
+									celsiusToFahrenheit(probeSetpointCelsius)
+								)
+							: createSetProbeV2Command(deviceId, probeSetpointCelsius);
+
 					// Send command via WebSocket
 					const sent = wsStore.sendCommand(command);
 					if (sent) {
@@ -239,18 +244,14 @@
 					lastResult = { success: false, error: 'Failed to set probe' };
 				}
 			}, 500); // 500ms debounce
-			
+
 			return () => clearTimeout(timeoutId);
 		}
 	});
 
 	// Get probe temperature min/max for dialpad
-	let probeDialpadMin = $derived(
-		probeTemperatureUnit === 'C' ? 1 : 33
-	);
-	let probeDialpadMax = $derived(
-		probeTemperatureUnit === 'C' ? 100 : 212
-	);
+	let probeDialpadMin = $derived(probeTemperatureUnit === 'C' ? 1 : 33);
+	let probeDialpadMax = $derived(probeTemperatureUnit === 'C' ? 100 : 212);
 
 	// Handle temperature input from dialpad
 	function handleTemperatureChange(value: number) {
@@ -267,14 +268,14 @@
 	// Handle temperature unit change - automatically set on device
 	function handleUnitChange(newUnit: 'C' | 'F') {
 		temperatureUnit = newUnit;
-		
+
 		// Automatically set the unit on the device if device is selected
 		if (deviceId && $wsStore.connected) {
 			try {
 				// Create and send command via WebSocket
 				const command = createSetTemperatureUnitCommand(deviceId, newUnit);
 				const sent = wsStore.sendCommand(command);
-				
+
 				if (sent) {
 					lastResult = { success: true };
 				} else {
@@ -300,13 +301,21 @@
 	// Get temperature min/max for dialpad
 	let dialpadMin = $derived(
 		temperatureUnit === 'C'
-			? (temperatureMode === 'wet' ? 25 : 25)
-			: (temperatureMode === 'wet' ? 75 : 75)
+			? temperatureMode === 'wet'
+				? 25
+				: 25
+			: temperatureMode === 'wet'
+				? 75
+				: 75
 	);
 	let dialpadMax = $derived(
 		temperatureUnit === 'C'
-			? (temperatureMode === 'wet' ? 100 : 250)
-			: (temperatureMode === 'wet' ? 212 : 482)
+			? temperatureMode === 'wet'
+				? 100
+				: 250
+			: temperatureMode === 'wet'
+				? 212
+				: 482
 	);
 
 	// Connect to WebSocket on mount
@@ -326,7 +335,7 @@
 			const timeoutId = setTimeout(() => {
 				wsStore.requestDeviceState(deviceId);
 			}, 500);
-			
+
 			return () => clearTimeout(timeoutId);
 		}
 	});
@@ -350,62 +359,61 @@
 <div class="container">
 	<div class="layout-wrapper">
 		<div class="main-content">
-		<TemperatureControl
-			temperatureMode={temperatureMode}
-			temperatureUnit={temperatureUnit}
-			displayTemperature={displayTemperature}
-			onModeChange={(mode) => temperatureMode = mode}
-			onUnitChange={handleUnitChange}
-			onTemperatureChange={handleTemperatureChange}
-			dialpadMin={dialpadMin}
-			dialpadMax={dialpadMax}
-		/>
+			<TemperatureControl
+				{temperatureMode}
+				{temperatureUnit}
+				{displayTemperature}
+				onModeChange={(mode) => (temperatureMode = mode)}
+				onUnitChange={handleUnitChange}
+				onTemperatureChange={handleTemperatureChange}
+				{dialpadMin}
+				{dialpadMax}
+			/>
 
-		<HeatingElements
-			topElement={topElement}
-			bottomElement={bottomElement}
-			rearElement={rearElement}
-			hasActiveHeatingElement={hasActiveHeatingElement}
-			onToggle={toggleHeatingElement}
-		/>
+			<HeatingElements
+				{topElement}
+				{bottomElement}
+				{rearElement}
+				{hasActiveHeatingElement}
+				onToggle={toggleHeatingElement}
+			/>
 
-		<SteamControl
-			steamMode={steamMode}
-			steamSetpoint={steamSetpoint}
-			onModeChange={(mode) => steamMode = mode}
-			onSetpointChange={(value) => steamSetpoint = value}
-		/>
+			<SteamControl
+				{steamMode}
+				{steamSetpoint}
+				onModeChange={(mode) => (steamMode = mode)}
+				onSetpointChange={(value) => (steamSetpoint = value)}
+			/>
 
-		<TimerControl
-			timerEnabled={timerEnabled}
-			timerSeconds={timerSeconds}
-			timerStartType={timerStartType}
-			onEnabledChange={(enabled) => timerEnabled = enabled}
-			onSecondsChange={(seconds) => timerSeconds = seconds}
-			onStartTypeChange={(startType) => timerStartType = startType}
-		/>
+			<TimerControl
+				{timerEnabled}
+				{timerSeconds}
+				{timerStartType}
+				onEnabledChange={(enabled) => (timerEnabled = enabled)}
+				onSecondsChange={(seconds) => (timerSeconds = seconds)}
+				onStartTypeChange={(startType) => (timerStartType = startType)}
+			/>
 
-		<ProbeControl
-			probeEnabled={probeEnabled}
-			probeTemperatureUnit={probeTemperatureUnit}
-			displayProbeTemperature={displayProbeTemperature}
-			onEnabledChange={(enabled) => probeEnabled = enabled}
-			onUnitChange={(unit) => probeTemperatureUnit = unit}
-			onTemperatureChange={handleProbeTemperatureChange}
-			dialpadMin={probeDialpadMin}
-			dialpadMax={probeDialpadMax}
-		/>
-
+			<ProbeControl
+				{probeEnabled}
+				{probeTemperatureUnit}
+				{displayProbeTemperature}
+				onEnabledChange={(enabled) => (probeEnabled = enabled)}
+				onUnitChange={(unit) => (probeTemperatureUnit = unit)}
+				onTemperatureChange={handleProbeTemperatureChange}
+				dialpadMin={probeDialpadMin}
+				dialpadMax={probeDialpadMax}
+			/>
 		</div>
-		
+
 		<!-- Actions Sidebar -->
 		<aside class="actions-sidebar">
 			<ActionsPanel
-				deviceId={deviceId}
-				deviceVersion={deviceVersion}
-				hasActiveHeatingElement={hasActiveHeatingElement}
-				buildStageData={buildStageData}
-				lastResult={lastResult}
+				{deviceId}
+				{deviceVersion}
+				{hasActiveHeatingElement}
+				{buildStageData}
+				{lastResult}
 				wsConnected={$wsStore.connected}
 				wsError={$wsStore.error}
 				onResultChange={handleResultChange}
@@ -413,7 +421,7 @@
 
 			<CurrentState
 				deviceState={$wsStore.deviceState}
-				deviceId={deviceId}
+				{deviceId}
 				wsConnected={$wsStore.connected}
 			/>
 		</aside>
@@ -425,7 +433,10 @@
 		max-width: 1400px;
 		margin: 0 auto;
 		padding: 2rem;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.layout-wrapper {
@@ -467,4 +478,3 @@
 		}
 	}
 </style>
-

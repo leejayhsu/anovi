@@ -45,11 +45,7 @@
 	{#if timerEnabled}
 		<div class="form-group">
 			<label>Duration</label>
-			<button
-				type="button"
-				class="temperature-button"
-				onclick={() => (showTimerSelector = true)}
-			>
+			<button type="button" class="temperature-button" onclick={() => (showTimerSelector = true)}>
 				<span class="temperature-value">{formatTime(timerSeconds)}</span>
 			</button>
 		</div>
@@ -92,4 +88,3 @@
 		onClose={() => (showTimerSelector = false)}
 	/>
 {/if}
-

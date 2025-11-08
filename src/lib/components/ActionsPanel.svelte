@@ -3,9 +3,9 @@
 	import {
 		createStartCookV1Command,
 		createStartCookV2Command,
-		createStopCookCommand,
+		createStopCookCommand
 	} from '$lib/anova.js';
-  import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types';
+	import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types';
 
 	interface Props {
 		deviceId: string;
@@ -32,10 +32,11 @@
 	function handleStartCook() {
 		try {
 			const stageData = buildStageData();
-			const command = deviceVersion === 'v1'
-				? createStartCookV1Command({ deviceId, stages: [stageData as StartCookV1Stage] })
-				: createStartCookV2Command({ deviceId, stages: [stageData as StartCookV2Stage] });
-			
+			const command =
+				deviceVersion === 'v1'
+					? createStartCookV1Command({ deviceId, stages: [stageData as StartCookV1Stage] })
+					: createStartCookV2Command({ deviceId, stages: [stageData as StartCookV2Stage] });
+
 			const sent = wsStore.sendCommand(command);
 			if (sent) {
 				onResultChange({ success: true });
@@ -52,7 +53,7 @@
 		try {
 			const command = createStopCookCommand(deviceId);
 			const sent = wsStore.sendCommand(command);
-			
+
 			if (sent) {
 				onResultChange({ success: true });
 			} else {
@@ -110,4 +111,3 @@
 		{/if}
 	</section>
 {/if}
-

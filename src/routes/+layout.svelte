@@ -47,7 +47,10 @@
 		display: flex;
 		justify-content: space-between;
 		align-items: center;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.logo {
@@ -55,7 +58,10 @@
 		font-weight: 600;
 		color: #333;
 		text-decoration: none;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.header-right {
@@ -67,7 +73,10 @@
 	.token-status {
 		font-size: 0.875rem;
 		color: #666;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.token-status.configured {
@@ -85,7 +94,10 @@
 		min-height: 44px;
 		display: flex;
 		align-items: center;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	.settings-link:hover {
@@ -108,4 +120,3 @@
 		}
 	}
 </style>
-

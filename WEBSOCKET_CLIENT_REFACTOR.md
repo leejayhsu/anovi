@@ -7,14 +7,18 @@ Moved the WebSocket connection management from server-side to client-side while 
 ## Changes Made
 
 ### 1. New Server Endpoint for Authentication
+
 **File: `/src/routes/api/ws-auth/+server.ts`**
+
 - Created a secure endpoint that provides the WebSocket auth token
 - Token is retrieved from server-side storage (database or environment variable)
 - Returns 401 if not authenticated
 - Validates token format before returning
 
 ### 2. Client-Side WebSocket Store
+
 **File: `/src/lib/stores/websocket.svelte.ts`**
+
 - Created a new Svelte 5 store for managing WebSocket connections
 - Features:
   - Fetches auth credentials from `/api/ws-auth` endpoint
@@ -26,7 +30,9 @@ Moved the WebSocket connection management from server-side to client-side while 
   - Stores discovered devices and their states in reactive Maps
 
 ### 3. Updated Main Page Component
+
 **File: `/src/routes/+page.svelte`**
+
 - Removed server-side polling mechanism (was polling every 2 seconds)
 - Added WebSocket connection on component mount
 - Auto-disconnects WebSocket on component unmount
@@ -36,7 +42,9 @@ Moved the WebSocket connection management from server-side to client-side while 
 - Shows connection status and errors
 
 ### 4. Simplified Server Actions
+
 **File: `/src/routes/+page.server.ts`**
+
 - Removed `getDeviceState` action (no longer needed)
 - Kept command-sending actions (startCook, stopCook, setProbe, setTemperatureUnit)
 - Kept initial device discovery on page load
@@ -44,12 +52,14 @@ Moved the WebSocket connection management from server-side to client-side while 
 ## Architecture
 
 ### Before
+
 ```
 Client → Server → WebSocket (server-side) → Anova API
        ← Polling ←
 ```
 
 ### After
+
 ```
 Client → WebSocket (client-side) → Anova API
        ← Real-time Updates ←
@@ -77,16 +87,16 @@ Client → /api/ws-auth → Server (auth token)
 ## WebSocket Store API
 
 ```typescript
-wsStore.connect()           // Establish connection
-wsStore.disconnect()        // Close connection
-wsStore.sendCommand(cmd)    // Send a command
-wsStore.requestDeviceState(deviceId)  // Request device state
+wsStore.connect(); // Establish connection
+wsStore.disconnect(); // Close connection
+wsStore.sendCommand(cmd); // Send a command
+wsStore.requestDeviceState(deviceId); // Request device state
 
 // Reactive properties
-$wsStore.connected          // Connection status
-$wsStore.devices            // Map of discovered devices
-$wsStore.deviceStates       // Map of device states
-$wsStore.error              // Error message (if any)
+$wsStore.connected; // Connection status
+$wsStore.devices; // Map of discovered devices
+$wsStore.deviceStates; // Map of device states
+$wsStore.error; // Error message (if any)
 ```
 
 ## Backward Compatibility
@@ -102,4 +112,3 @@ $wsStore.error              // Error message (if any)
 3. Test device state updates in real-time
 4. Test error handling when token is not set
 5. Test multiple devices if available
-

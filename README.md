@@ -67,6 +67,7 @@ You can preview the production build with `npm run preview`.
 ## Database
 
 The application uses SQLite to store:
+
 - Personal access tokens (if not using environment variable)
 - Discovered device information
 

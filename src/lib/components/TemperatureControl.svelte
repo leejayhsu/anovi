@@ -82,8 +82,12 @@
 		</button>
 		<span class="helper-text">
 			{temperatureMode === 'wet'
-				? (temperatureUnit === 'C' ? 'Range: 25-100°C' : 'Range: 75-212°F')
-				: (temperatureUnit === 'C' ? 'Range: 25-250°C' : 'Range: 75-482°F')}
+				? temperatureUnit === 'C'
+					? 'Range: 25-100°C'
+					: 'Range: 75-212°F'
+				: temperatureUnit === 'C'
+					? 'Range: 25-250°C'
+					: 'Range: 75-482°F'}
 		</span>
 	</div>
 </section>
@@ -98,4 +102,3 @@
 		onClose={() => (showTemperatureDialpad = false)}
 	/>
 {/if}
-

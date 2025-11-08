@@ -26,8 +26,8 @@
 	color: #555;
 }
 
-.form-group input[type="text"],
-.form-group input[type="number"],
+.form-group input[type='text'],
+.form-group input[type='number'],
 .form-group select {
 	width: 100%;
 	padding: 0.5rem;
@@ -36,11 +36,11 @@
 	font-size: 1rem;
 }
 
-.form-group input[type="range"] {
+.form-group input[type='range'] {
 	width: 100%;
 }
 
-.form-group input[type="checkbox"] {
+.form-group input[type='checkbox'] {
 	margin-right: 0.5rem;
 }
 
@@ -307,7 +307,7 @@ button:active {
 	font-weight: 600;
 }
 
-.state-value[class*="status-"] {
+.state-value[class*='status-'] {
 	padding: 0.25rem 0.75rem;
 	border-radius: 12px;
 	font-size: 0.875rem;

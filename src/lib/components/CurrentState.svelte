@@ -47,8 +47,9 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.dry.current.celsius.toFixed(1)}°C
-							({deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureBulbs.dry.current.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(
+								1
+							)}°F)
 						</span>
 					</div>
 
@@ -56,8 +57,9 @@
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C
-								({deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(1)}°F)
+								{deviceState.nodes.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(
+									1
+								)}°F)
 							</span>
 						</div>
 					{/if}
@@ -75,8 +77,9 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.wet.current.celsius.toFixed(1)}°C
-							({deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureBulbs.wet.current.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(
+								1
+							)}°F)
 						</span>
 					</div>
 
@@ -84,8 +87,9 @@
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C
-								({deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(1)}°F)
+								{deviceState.nodes.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(
+									1
+								)}°F)
 							</span>
 						</div>
 					{/if}
@@ -103,13 +107,17 @@
 
 				<div class="state-row">
 					<span class="state-label">Current:</span>
-					<span class="state-value">{deviceState.nodes.steamGenerators.relativeHumidity.current}%</span>
+					<span class="state-value"
+						>{deviceState.nodes.steamGenerators.relativeHumidity.current}%</span
+					>
 				</div>
 
 				{#if deviceState.nodes.steamGenerators.relativeHumidity.setpoint !== undefined}
 					<div class="state-row">
 						<span class="state-label">Setpoint:</span>
-						<span class="state-value">{deviceState.nodes.steamGenerators.relativeHumidity.setpoint}%</span>
+						<span class="state-value"
+							>{deviceState.nodes.steamGenerators.relativeHumidity.setpoint}%</span
+						>
 					</div>
 				{/if}
 			{/if}
@@ -124,8 +132,9 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureProbe.current.celsius.toFixed(1)}°C
-							({deviceState.nodes.temperatureProbe.current.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureProbe.current.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureProbe.current.fahrenheit.toFixed(
+								1
+							)}°F)
 						</span>
 					</div>
 				{/if}
@@ -134,8 +143,9 @@
 					<div class="state-row">
 						<span class="state-label">Setpoint:</span>
 						<span class="state-value">
-							{deviceState.nodes.temperatureProbe.setpoint.celsius.toFixed(1)}°C
-							({deviceState.nodes.temperatureProbe.setpoint.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureProbe.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureProbe.setpoint.fahrenheit.toFixed(
+								1
+							)}°F)
 						</span>
 					</div>
 				{/if}
@@ -181,4 +191,3 @@
 		<p class="loading-state">Connecting to device...</p>
 	</section>
 {/if}
-

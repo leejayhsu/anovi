@@ -67,10 +67,12 @@
 			{#if data.tokenStatus.isFromEnv}
 				<div class="env-token-notice">
 					<p class="info-message">
-						✓ Token is configured via environment variable (<code>ANOVA_TOKEN</code> or <code>ANOVA_PERSONAL_ACCESS_TOKEN</code>)
+						✓ Token is configured via environment variable (<code>ANOVA_TOKEN</code> or
+						<code>ANOVA_PERSONAL_ACCESS_TOKEN</code>)
 					</p>
 					<p class="helper-text">
-						To use database storage instead, remove the environment variable and restart the application.
+						To use database storage instead, remove the environment variable and restart the
+						application.
 					</p>
 				</div>
 			{:else if showTokenForm || !data.tokenStatus.hasToken}
@@ -116,9 +118,7 @@
 			{:else}
 				<p>Token is configured ✓</p>
 				<div class="form-group">
-					<button type="button" onclick={() => (showTokenForm = true)}>
-						Update Token
-					</button>
+					<button type="button" onclick={() => (showTokenForm = true)}> Update Token </button>
 				</div>
 			{/if}
 		</section>
@@ -156,11 +156,7 @@
 			{#if data.discoveredDevices && data.discoveredDevices.length > 0}
 				<div class="form-group">
 					<label for="device-select">Select Device</label>
-					<select
-						id="device-select"
-						bind:value={deviceId}
-						onchange={updateDeviceConfig}
-					>
+					<select id="device-select" bind:value={deviceId} onchange={updateDeviceConfig}>
 						<option value="">-- Select a device --</option>
 						{#each data.discoveredDevices as device}
 							<option value={device.cookerId}>
@@ -189,7 +185,8 @@
 			</div>
 			{#if data.discoveredDevices && data.discoveredDevices.length === 0 && data.tokenStatus.hasToken}
 				<p class="helper-text">
-					No devices discovered yet. Make sure your oven is powered on and connected to Wi-Fi. Click "Refresh Devices" to search again.
+					No devices discovered yet. Make sure your oven is powered on and connected to Wi-Fi. Click
+					"Refresh Devices" to search again.
 				</p>
 			{/if}
 		</section>
@@ -213,7 +210,10 @@
 		max-width: 1200px;
 		margin: 0 auto;
 		padding: 2rem;
-		font-family: system-ui, -apple-system, sans-serif;
+		font-family:
+			system-ui,
+			-apple-system,
+			sans-serif;
 	}
 
 	header {
@@ -358,4 +358,3 @@
 		}
 	}
 </style>
-

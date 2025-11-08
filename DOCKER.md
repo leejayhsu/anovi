@@ -59,6 +59,7 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 ### Database Persistence
 
 ✅ **YES, bind mount the `data` directory!** This ensures:
+
 - Database persists across container restarts
 - Database survives container deletion
 - You can backup/access the database from the host
@@ -67,6 +68,7 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 ### Database Creation
 
 ✅ **YES, the database will be created automatically** in the container, just like locally. The code handles:
+
 - Creating the `data/` directory if it doesn't exist
 - Creating the database file automatically
 - Creating the table structure on first run
@@ -74,6 +76,7 @@ echo $GITHUB_TOKEN | docker login ghcr.io -u USERNAME --password-stdin
 ### Volume Mount
 
 The `docker-compose.yml` includes:
+
 ```yaml
 volumes:
   - ./data:/app/data
@@ -84,6 +87,7 @@ This maps your host's `./data` directory to the container's `/app/data` director
 ### Environment Variables
 
 You can override the database path or WebSocket URL:
+
 ```yaml
 environment:
   DATABASE_PATH: /app/data/anova.db
@@ -99,6 +103,7 @@ npm install @sveltejs/adapter-node
 ```
 
 Then update `svelte.config.js`:
+
 ```js
 import adapter from '@sveltejs/adapter-node';
 ```
@@ -108,4 +113,3 @@ import adapter from '@sveltejs/adapter-node';
 - **Database not persisting?** Check that the volume mount is correct in docker-compose.yml
 - **Permission errors?** The container runs as root by default. You may need to adjust permissions on the host `data/` directory
 - **Build fails?** Make sure build dependencies (python3, make, g++) are installed (already in Dockerfile)
-
