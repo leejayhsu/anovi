@@ -7,6 +7,115 @@ import { v4 as uuidv4 } from 'uuid';
 // Device ID (will be obtained from device discovery)
 export let deviceId: string = '';
 
+// Device state tracking (shared between client and server)
+// This represents the full state response from the Anova API
+export interface DeviceState {
+	deviceId: string;
+	temperatureUnit?: 'C' | 'F';
+	mode?: string; // 'cook', 'idle', etc.
+	
+	// Temperature bulbs - both dry and wet
+	temperatureBulbs?: {
+		mode: 'dry' | 'wet';
+		dry?: {
+			current?: {
+				celsius: number;
+				fahrenheit: number;
+			};
+			setpoint?: {
+				celsius: number;
+				fahrenheit: number;
+			};
+		};
+		wet?: {
+			current?: {
+				celsius: number;
+				fahrenheit: number;
+			};
+			setpoint?: {
+				celsius: number;
+				fahrenheit: number;
+			};
+		};
+	};
+	
+	// Steam generators / humidity
+	steamGenerators?: {
+		mode: 'idle' | 'relative-humidity' | 'steam-percentage';
+		relativeHumidity?: {
+			current?: number;
+			setpoint?: number;
+		};
+		steamPercentage?: {
+			current?: number;
+			setpoint?: number;
+		};
+	};
+	
+	// Temperature probe
+	temperatureProbe?: {
+		current?: {
+			celsius: number;
+			fahrenheit: number;
+		};
+		setpoint?: {
+			celsius: number;
+			fahrenheit: number;
+		};
+		connected: boolean;
+	};
+	
+	// Timer information
+	timer?: {
+		mode: string; // 'idle', 'running', etc.
+		current: number; // seconds
+		initial: number; // seconds
+	};
+	
+	// Cook information
+	cook?: {
+		activeStageId?: string;
+		activeStageIndex?: number;
+		activeStageSecondsElapsed?: number;
+		secondsElapsed?: number;
+		cookId?: string;
+	};
+	
+	// Heating elements
+	heatingElements?: {
+		top?: { on: boolean; watts: number; failed: boolean };
+		bottom?: { on: boolean; watts: number; failed: boolean };
+		rear?: { on: boolean; watts: number; failed: boolean };
+	};
+	
+	// Other nodes
+	fan?: {
+		speed: number;
+		failed: boolean;
+	};
+	
+	vent?: {
+		open: boolean;
+	};
+	
+	door?: {
+		closed: boolean;
+	};
+	
+	lamp?: {
+		on: boolean;
+		preference: string;
+		failed: boolean;
+	};
+	
+	waterTank?: {
+		empty: boolean;
+	};
+	
+	lastUpdated: Date | string; // Date on server, string after JSON serialization
+	rawPayload?: any; // Store full payload for debugging
+}
+
 // Generate UUID v4 - uses uuid library which works in both browser and Node.js
 export function generateUUID(): string {
 	return uuidv4();

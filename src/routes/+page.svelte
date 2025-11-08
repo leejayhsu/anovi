@@ -11,6 +11,7 @@
 	import Dialpad from '$lib/components/Dialpad.svelte';
 	import TimeSelector from '$lib/components/TimeSelector.svelte';
 	import { deviceConfig } from '$lib/stores/device.js';
+	import { ovenState, updateOvenState, setOvenStateLoading } from '$lib/stores/oven-state.svelte';
 
 	let { data } = $props();
 
@@ -369,6 +370,63 @@
 			? (temperatureMode === 'wet' ? 100 : 250)
 			: (temperatureMode === 'wet' ? 212 : 482)
 	);
+
+	// Poll for device state updates every 2 seconds
+	$effect(() => {
+		if (!deviceId) return;
+
+		let intervalId: NodeJS.Timeout;
+
+		const pollDeviceState = async () => {
+			try {
+				setOvenStateLoading(deviceId);
+				const formData = new FormData();
+				formData.append('deviceId', deviceId);
+				
+				const response = await fetch('?/getDeviceState', {
+					method: 'POST',
+					body: formData
+				});
+				
+				if (response.ok) {
+					const result = await response.json();
+					if (result.type === 'success') {
+						// Update state even if null (clears loading state)
+						updateOvenState(deviceId, result.data?.state || null);
+					}
+				}
+			} catch (error) {
+				console.error('Error fetching device state:', error);
+				// Clear loading state on error
+				updateOvenState(deviceId, null);
+			}
+		};
+
+		// Poll after a short delay to allow WebSocket to connect and receive initial state
+		const initialTimeout = setTimeout(() => {
+			pollDeviceState();
+		}, 1000);
+
+		// Then poll every 2 seconds
+		intervalId = setInterval(pollDeviceState, 2000);
+
+		// Cleanup on effect re-run or unmount
+		return () => {
+			clearTimeout(initialTimeout);
+			if (intervalId) {
+				clearInterval(intervalId);
+			}
+		};
+	});
+
+	// Format time remaining for display
+	function formatTimeRemaining(seconds: number | undefined): string {
+		if (seconds === undefined) return '--:--:--';
+		const hours = Math.floor(seconds / 3600);
+		const minutes = Math.floor((seconds % 3600) / 60);
+		const secs = seconds % 60;
+		return `${hours.toString().padStart(2, '0')}:${minutes.toString().padStart(2, '0')}:${secs.toString().padStart(2, '0')}`;
+	}
 </script>
 
 <svelte:head>
@@ -376,7 +434,8 @@
 </svelte:head>
 
 <div class="container">
-	<div class="main-content">
+	<div class="layout-wrapper">
+		<div class="main-content">
 		<!-- Temperature Control -->
 		<section class="card">
 			<h2>Temperature Control</h2>
@@ -668,120 +727,270 @@
 			{/if}
 		</section>
 
-		<!-- Extra Settings (Fan & Vent, Rack Position) -->
-		<section class="card extra-settings">
-			<button
-				type="button"
-				class="extra-settings-header"
-				onclick={() => (showExtraSettings = !showExtraSettings)}
-			>
-				<h2>Extra Settings</h2>
-				<span class="chevron" class:expanded={showExtraSettings}>▼</span>
-			</button>
-			{#if showExtraSettings}
-				<div class="extra-settings-content">
-					<!-- Fan & Vent -->
-					<div class="card-inner">
-						<h3>Fan & Vent</h3>
-						<div class="form-group">
-							<label for="fan-speed">Fan Speed (%)</label>
-							<input
-								id="fan-speed"
-								type="range"
-								min="0"
-								max="100"
-								bind:value={fanSpeed}
-							/>
-							<span>{fanSpeed}%</span>
-						</div>
-						<div class="form-group">
-							<label>
-								<input type="checkbox" bind:checked={ventOpen} />
-								Vent Open
-							</label>
+		</div>
+		
+		<!-- Actions Sidebar -->
+		<aside class="actions-sidebar">
+			<!-- Current State Display -->
+			{#if ovenState.state && ovenState.deviceId === deviceId}
+				<section class="card">
+					<h2>Current State</h2>
+					<div class="state-info">
+						<!-- Mode -->
+						{#if ovenState.state.mode}
+							<div class="state-row">
+								<span class="state-label">Mode:</span>
+								<span class="state-value status-{ovenState.state.mode}">
+									{ovenState.state.mode}
+								</span>
+							</div>
+						{/if}
+						
+						<!-- Temperature Bulbs - Always show both dry and wet -->
+						{#if ovenState.state.temperatureBulbs}
+							<!-- Dry Bulb Temperature -->
+							{#if ovenState.state.temperatureBulbs.dry?.current}
+								<div class="state-section-header">
+									<strong>Dry Bulb Temperature</strong>
+									{#if ovenState.state.temperatureBulbs.mode === 'dry'}
+										<span class="active-mode-badge">Active</span>
+									{/if}
+								</div>
+								
+								<div class="state-row">
+									<span class="state-label">Current:</span>
+									<span class="state-value temperature">
+										{ovenState.state.temperatureBulbs.dry.current.celsius.toFixed(1)}°C
+										({ovenState.state.temperatureBulbs.dry.current.fahrenheit.toFixed(1)}°F)
+									</span>
+								</div>
+								
+								{#if ovenState.state.temperatureBulbs.dry.setpoint}
+									<div class="state-row">
+										<span class="state-label">Setpoint:</span>
+										<span class="state-value">
+											{ovenState.state.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C
+											({ovenState.state.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(1)}°F)
+										</span>
+									</div>
+								{/if}
+							{/if}
+							
+							<!-- Wet Bulb Temperature -->
+							{#if ovenState.state.temperatureBulbs.wet?.current}
+								<div class="state-section-header">
+									<strong>Wet Bulb Temperature</strong>
+									{#if ovenState.state.temperatureBulbs.mode === 'wet'}
+										<span class="active-mode-badge">Active</span>
+									{/if}
+								</div>
+								
+								<div class="state-row">
+									<span class="state-label">Current:</span>
+									<span class="state-value temperature">
+										{ovenState.state.temperatureBulbs.wet.current.celsius.toFixed(1)}°C
+										({ovenState.state.temperatureBulbs.wet.current.fahrenheit.toFixed(1)}°F)
+									</span>
+								</div>
+								
+								{#if ovenState.state.temperatureBulbs.wet.setpoint}
+									<div class="state-row">
+										<span class="state-label">Setpoint:</span>
+										<span class="state-value">
+											{ovenState.state.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C
+											({ovenState.state.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(1)}°F)
+										</span>
+									</div>
+								{/if}
+							{/if}
+						{/if}
+						
+						<!-- Humidity -->
+						{#if ovenState.state.steamGenerators?.relativeHumidity?.current !== undefined}
+							<div class="state-section-header">
+								<strong>Humidity</strong>
+								{#if ovenState.state.steamGenerators.mode !== 'idle'}
+									<span class="active-mode-badge">Active</span>
+								{/if}
+							</div>
+							
+							<div class="state-row">
+								<span class="state-label">Current:</span>
+								<span class="state-value">{ovenState.state.steamGenerators.relativeHumidity.current}%</span>
+							</div>
+							
+							{#if ovenState.state.steamGenerators.relativeHumidity.setpoint !== undefined}
+								<div class="state-row">
+									<span class="state-label">Setpoint:</span>
+									<span class="state-value">{ovenState.state.steamGenerators.relativeHumidity.setpoint}%</span>
+								</div>
+							{/if}
+						{/if}
+						
+						<!-- Temperature Probe -->
+						{#if ovenState.state.temperatureProbe?.connected}
+							<div class="state-section-header">
+								<strong>Temperature Probe</strong>
+							</div>
+							
+							{#if ovenState.state.temperatureProbe.current}
+								<div class="state-row">
+									<span class="state-label">Current:</span>
+									<span class="state-value temperature">
+										{ovenState.state.temperatureProbe.current.celsius.toFixed(1)}°C
+										({ovenState.state.temperatureProbe.current.fahrenheit.toFixed(1)}°F)
+									</span>
+								</div>
+							{/if}
+							
+							{#if ovenState.state.temperatureProbe.setpoint}
+								<div class="state-row">
+									<span class="state-label">Setpoint:</span>
+									<span class="state-value">
+										{ovenState.state.temperatureProbe.setpoint.celsius.toFixed(1)}°C
+										({ovenState.state.temperatureProbe.setpoint.fahrenheit.toFixed(1)}°F)
+									</span>
+								</div>
+							{/if}
+						{/if}
+						
+						<!-- Timer -->
+						{#if ovenState.state.timer && ovenState.state.timer.mode !== 'idle'}
+							<div class="state-section-header">
+								<strong>Timer</strong>
+							</div>
+							<div class="state-row">
+								<span class="state-label">Current:</span>
+								<span class="state-value">
+									{formatTimeRemaining(ovenState.state.timer.current)}
+								</span>
+							</div>
+							{#if ovenState.state.timer.initial > 0}
+								<div class="state-row">
+									<span class="state-label">Initial:</span>
+									<span class="state-value">
+										{formatTimeRemaining(ovenState.state.timer.initial)}
+									</span>
+								</div>
+							{/if}
+						{/if}
+						
+						<!-- Cook Information -->
+						{#if ovenState.state.cook}
+							<div class="state-section-header">
+								<strong>Cook Progress</strong>
+							</div>
+							{#if ovenState.state.cook.activeStageIndex !== undefined}
+								<div class="state-row">
+									<span class="state-label">Stage:</span>
+									<span class="state-value">{ovenState.state.cook.activeStageIndex + 1}</span>
+								</div>
+							{/if}
+							{#if ovenState.state.cook.activeStageSecondsElapsed !== undefined}
+								<div class="state-row">
+									<span class="state-label">Stage Time:</span>
+									<span class="state-value">
+										{formatTimeRemaining(ovenState.state.cook.activeStageSecondsElapsed)}
+									</span>
+								</div>
+							{/if}
+							{#if ovenState.state.cook.secondsElapsed !== undefined}
+								<div class="state-row">
+									<span class="state-label">Total Time:</span>
+									<span class="state-value">
+										{formatTimeRemaining(ovenState.state.cook.secondsElapsed)}
+									</span>
+								</div>
+							{/if}
+						{/if}
+						
+						<div class="state-row last-update">
+							<span class="state-label">Updated:</span>
+							<span class="state-value">
+								{new Date(ovenState.state.lastUpdated).toLocaleTimeString()}
+							</span>
 						</div>
 					</div>
-
-					<!-- Rack Position -->
-					<div class="card-inner">
-						<h3>Rack Position</h3>
-						<div class="form-group">
-							<label for="rack-position">Position (1-5)</label>
-							<input
-								id="rack-position"
-								type="number"
-								bind:value={rackPosition}
-								min="1"
-								max="5"
-								step="1"
-							/>
-						</div>
-					</div>
-				</div>
+				</section>
+			{:else if ovenState.isLoading}
+				<section class="card">
+					<h2>Current State</h2>
+					<p class="loading-state">Loading device state...</p>
+				</section>
+			{:else if deviceId}
+				<section class="card">
+					<h2>Current State</h2>
+					<p class="loading-state">No state data available yet. Waiting for device updates...</p>
+				</section>
 			{/if}
-		</section>
 
-		<!-- Control Buttons -->
-		<section class="card actions">
-			<h2>Actions</h2>
-			<div class="button-group">
-				<form
-					method="POST"
-					action="?/startCook"
-					use:enhance={() => {
-						return async ({ result, update }) => {
-							await update();
-							if (result.type === 'success' && result.data) {
-								lastResult = result.data as { success: boolean; error?: string };
-							}
-						};
-					}}
-				>
-					<input type="hidden" name="deviceId" value={deviceId} />
-					<input type="hidden" name="deviceVersion" value={deviceVersion} />
-					<input type="hidden" name="stageData" value={JSON.stringify(buildStageData())} />
-					<button type="submit" class="btn-primary" disabled={!hasActiveHeatingElement}>
-						Start Cook
-					</button>
-				</form>
-				<form
-					method="POST"
-					action="?/stopCook"
-					use:enhance={() => {
-						return async ({ result, update }) => {
-							await update();
-							if (result.type === 'success' && result.data) {
-								lastResult = result.data as { success: boolean; error?: string };
-							}
-						};
-					}}
-				>
-					<input type="hidden" name="deviceId" value={deviceId} />
-					<button type="submit" class="btn-danger">Stop Cook</button>
-				</form>
-			</div>
-		</section>
-
-		<!-- Last Result -->
-		{#if lastResult}
 			<section class="card">
-				<h2>Last Action Result</h2>
-				{#if lastResult.success}
-					<p class="success">✓ Command sent successfully</p>
-				{:else}
-					<p class="error">✗ Error: {lastResult.error || 'Unknown error'}</p>
-				{/if}
+				<h2>Actions</h2>
+				<div class="button-group-vertical">
+					<form
+						method="POST"
+						action="?/startCook"
+						use:enhance={() => {
+							return async ({ result, update }) => {
+								await update();
+								if (result.type === 'success' && result.data) {
+									lastResult = result.data as { success: boolean; error?: string };
+								}
+							};
+						}}
+					>
+						<input type="hidden" name="deviceId" value={deviceId} />
+						<input type="hidden" name="deviceVersion" value={deviceVersion} />
+						<input type="hidden" name="stageData" value={JSON.stringify(buildStageData())} />
+						<button type="submit" class="btn-primary btn-action" disabled={!hasActiveHeatingElement}>
+							Start Cook
+						</button>
+					</form>
+					<form
+						method="POST"
+						action="?/stopCook"
+						use:enhance={() => {
+							return async ({ result, update }) => {
+								await update();
+								if (result.type === 'success' && result.data) {
+									lastResult = result.data as { success: boolean; error?: string };
+								}
+							};
+						}}
+					>
+						<input type="hidden" name="deviceId" value={deviceId} />
+						<button type="submit" class="btn-danger btn-action">Stop Cook</button>
+					</form>
+				</div>
 			</section>
-		{/if}
+
+			<!-- Last Result -->
+			{#if lastResult}
+				<section class="card">
+					<h2>Last Result</h2>
+					{#if lastResult.success}
+						<p class="success">✓ Command sent successfully</p>
+					{:else}
+						<p class="error">✗ Error: {lastResult.error || 'Unknown error'}</p>
+					{/if}
+				</section>
+			{/if}
+		</aside>
 	</div>
 </div>
 
 <style>
 	.container {
-		max-width: 1200px;
+		max-width: 1400px;
 		margin: 0 auto;
 		padding: 2rem;
 		font-family: system-ui, -apple-system, sans-serif;
+	}
+
+	.layout-wrapper {
+		display: flex;
+		gap: 2rem;
+		align-items: flex-start;
 	}
 
 	header {
@@ -816,8 +1025,19 @@
 	}
 
 	.main-content {
+		flex: 1;
 		display: grid;
 		grid-template-columns: repeat(auto-fit, minmax(300px, 1fr));
+		gap: 1.5rem;
+	}
+
+	.actions-sidebar {
+		width: 320px;
+		flex-shrink: 0;
+		position: sticky;
+		top: 2rem;
+		display: flex;
+		flex-direction: column;
 		gap: 1.5rem;
 	}
 
@@ -1051,9 +1271,19 @@
 		flex: 1;
 	}
 
+	.button-group-vertical {
+		display: flex;
+		flex-direction: column;
+		gap: 1rem;
+	}
 
-	.actions {
-		grid-column: 1 / -1;
+	.button-group-vertical button,
+	.btn-action {
+		width: 100%;
+		padding: 1.25rem 1.5rem;
+		font-size: 1.125rem;
+		font-weight: 600;
+		min-height: 64px;
 	}
 
 	.success {
@@ -1128,14 +1358,130 @@
 		color: #333;
 	}
 
-	@media (max-width: 768px) {
+	@media (max-width: 1024px) {
+		.layout-wrapper {
+			flex-direction: column;
+		}
+
+		.actions-sidebar {
+			width: 100%;
+			position: relative;
+			top: 0;
+		}
+
 		.main-content {
 			grid-template-columns: 1fr;
 		}
 
-		.extra-settings-content {
-			grid-template-columns: 1fr;
-		}
+	.extra-settings-content {
+		grid-template-columns: 1fr;
 	}
+
+	.state-info {
+		display: flex;
+		flex-direction: column;
+		gap: 0.75rem;
+	}
+
+	.state-section-header {
+		margin-top: 0.75rem;
+		padding: 0.5rem 0 0.25rem 0;
+		border-top: 2px solid #e0e0e0;
+		color: #007bff;
+		font-size: 0.95rem;
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+	}
+
+	.state-section-header:first-child {
+		margin-top: 0;
+		border-top: none;
+	}
+
+	.active-mode-badge {
+		background-color: #28a745;
+		color: white;
+		padding: 0.125rem 0.5rem;
+		border-radius: 10px;
+		font-size: 0.75rem;
+		font-weight: 600;
+		text-transform: uppercase;
+	}
+
+	.state-row {
+		display: flex;
+		justify-content: space-between;
+		align-items: center;
+		padding: 0.5rem 0;
+		border-bottom: 1px solid #f0f0f0;
+	}
+
+	.state-row:last-child {
+		border-bottom: none;
+	}
+
+	.state-label {
+		font-weight: 600;
+		color: #555;
+		font-size: 0.9rem;
+	}
+
+	.state-value {
+		font-weight: 500;
+		color: #333;
+		text-align: right;
+	}
+
+	.state-value.temperature {
+		font-size: 1.125rem;
+		color: #007bff;
+		font-weight: 600;
+	}
+
+	.state-value[class*='status-'] {
+		padding: 0.25rem 0.75rem;
+		border-radius: 12px;
+		font-size: 0.875rem;
+		text-transform: capitalize;
+	}
+
+	.state-value.status-idle,
+	.state-value.status-off {
+		background-color: #e0e0e0;
+		color: #666;
+	}
+
+	.state-value.status-cooking,
+	.state-value.status-running {
+		background-color: #28a745;
+		color: white;
+	}
+
+	.state-value.status-preheating {
+		background-color: #ffc107;
+		color: #333;
+	}
+
+	.last-update {
+		margin-top: 0.5rem;
+		padding-top: 0.75rem;
+		border-top: 2px solid #e0e0e0;
+	}
+
+	.last-update .state-label,
+	.last-update .state-value {
+		font-size: 0.8rem;
+		color: #888;
+		font-weight: 400;
+	}
+
+	.loading-state {
+		color: #666;
+		font-style: italic;
+		text-align: center;
+		padding: 1rem 0;
+	}
+}
 </style>
 

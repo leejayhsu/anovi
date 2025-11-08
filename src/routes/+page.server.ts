@@ -11,12 +11,27 @@ export async function load() {
 	const isFromEnv = isTokenFromEnv();
 	let discoveredDevices = anova.getDiscoveredDevices();
 	
-	// If token exists but no devices found, try to fetch them
-	if (hasTokenValue && discoveredDevices.length === 0) {
+	// If token exists, initialize WebSocket connection and fetch devices
+	if (hasTokenValue) {
 		try {
-			discoveredDevices = await anova.fetchDevices();
+			// Initialize WebSocket connection first
+			await anova.initializeConnection();
+			
+			// Fetch devices if not already loaded
+			if (discoveredDevices.length === 0) {
+				discoveredDevices = await anova.fetchDevices();
+			}
+			
+			// Request state for all discovered devices
+			for (const device of discoveredDevices) {
+				try {
+					await anova.requestDeviceState(device.cookerId);
+				} catch (error) {
+					console.error(`Error requesting state for device ${device.cookerId}:`, error);
+				}
+			}
 		} catch (error) {
-			console.error('Error fetching devices:', error);
+			console.error('Error initializing connection:', error);
 			// Continue with empty array if fetch fails
 		}
 	}
@@ -31,6 +46,42 @@ export async function load() {
 }
 
 export const actions = {
+	getDeviceState: async ({ request }) => {
+		const data = await request.formData();
+		const deviceId = data.get('deviceId')?.toString();
+
+		if (!deviceId) {
+			return {
+				success: false,
+				error: 'Device ID is required',
+				state: null
+			};
+		}
+
+		try {
+			// Request fresh state from device
+			try {
+				await anova.requestDeviceState(deviceId);
+			} catch (error) {
+				console.error('Error requesting device state:', error);
+				// Continue to return cached state even if request fails
+			}
+			
+			// Return the current state (might be cached or newly updated)
+			const state = anova.getDeviceState(deviceId);
+			return {
+				success: true,
+				state
+			};
+		} catch (error) {
+			return {
+				success: false,
+				error: error instanceof Error ? error.message : 'Unknown error',
+				state: null
+			};
+		}
+	},
+
 	setToken: async ({ request }) => {
 		// Check if token is set via environment variable
 		if (isTokenFromEnv()) {
@@ -63,9 +114,19 @@ export const actions = {
 		// Close existing connection to force reconnect with new token
 		anova.closeConnection();
 
-		// Try to fetch devices after setting token
+		// Try to initialize connection and fetch devices after setting token
 		try {
-			await anova.fetchDevices();
+			await anova.initializeConnection();
+			const devices = await anova.fetchDevices();
+			
+			// Request state for all discovered devices
+			for (const device of devices) {
+				try {
+					await anova.requestDeviceState(device.cookerId);
+				} catch (error) {
+					console.error(`Error requesting state for device ${device.cookerId}:`, error);
+				}
+			}
 		} catch (error) {
 			console.error('Error fetching devices after setting token:', error);
 		}
@@ -81,7 +142,20 @@ export const actions = {
 			anova.clearDeviceCache();
 			// Close connection to force reconnect
 			anova.closeConnection();
+			
+			// Re-initialize connection
+			await anova.initializeConnection();
 			const devices = await anova.fetchDevices();
+			
+			// Request state for all discovered devices
+			for (const device of devices) {
+				try {
+					await anova.requestDeviceState(device.cookerId);
+				} catch (error) {
+					console.error(`Error requesting state for device ${device.cookerId}:`, error);
+				}
+			}
+			
 			return {
 				success: true,
 				devices

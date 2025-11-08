@@ -7,7 +7,8 @@ import { getToken, saveDevices, getDevices } from './db.server.js';
 import type {
 	StartCookV1Stage,
 	StartCookV2Stage,
-	BaseCommand
+	BaseCommand,
+	DeviceState as SharedDeviceState
 } from './anova.js';
 import {
 	createStartCookV1Command,
@@ -31,7 +32,11 @@ export interface DeviceInfo {
 	type: 'oven_v1' | 'oven_v2';
 }
 
+// Re-export DeviceState from shared module
+export type DeviceState = SharedDeviceState;
+
 const devices = new Map<string, DeviceInfo>();
+const deviceStates = new Map<string, DeviceState>();
 
 // Promise resolver for device discovery
 let deviceDiscoveryResolver: ((devices: DeviceInfo[]) => void) | null = null;
@@ -149,6 +154,66 @@ function handleMessage(message: any): void {
 		}
 	}
 
+	// Handle state update messages (commands containing 'STATE')
+	if (message.command && typeof message.command === 'string' && message.command.includes('STATE')) {
+		const payload = message.payload;
+		
+		// Extract device ID from payload (different formats for different message types)
+		let deviceId: string | undefined;
+		if (typeof payload === 'object' && payload !== null) {
+			deviceId = payload.cookerId || payload.id || payload.deviceId;
+		}
+
+		if (deviceId) {
+			// Parse and store state information
+			const state: DeviceState = {
+				deviceId,
+				lastUpdated: new Date(),
+				rawPayload: payload
+			};
+
+			// All sensor data is in payload.state.nodes
+			const nodes = payload.state?.nodes;
+
+			// Extract temperature bulbs information
+			if (nodes?.temperatureBulbs) {
+				state.temperatureBulbs = {
+					mode: nodes.temperatureBulbs.mode,
+					dry: nodes.temperatureBulbs.dry ? {
+						current: nodes.temperatureBulbs.dry.current,
+						setpoint: nodes.temperatureBulbs.dry.setpoint
+					} : undefined,
+					wet: nodes.temperatureBulbs.wet ? {
+						current: nodes.temperatureBulbs.wet.current,
+						setpoint: nodes.temperatureBulbs.wet.setpoint
+					} : undefined
+				};
+			}
+
+			// Extract steam generators / humidity information
+			if (nodes?.steamGenerators) {
+				state.steamGenerators = {
+					mode: nodes.steamGenerators.mode,
+					relativeHumidity: nodes.steamGenerators.relativeHumidity,
+					steamPercentage: nodes.steamGenerators.steamPercentage
+				};
+			}
+
+			// Extract temperature probe information
+			if (nodes?.temperatureProbe) {
+				state.temperatureProbe = {
+					current: nodes.temperatureProbe.current,
+					setpoint: nodes.temperatureProbe.setpoint,
+					connected: nodes.temperatureProbe.connected !== false
+				};
+			}
+
+			// Store the state
+			deviceStates.set(deviceId, state);
+			console.log(`[State Update] Device ${deviceId}:\n${JSON.stringify(state, null, 2)}`);
+		}
+	}
+
 	// Notify all handlers
 	for (const handler of messageHandlers) {
 		try {
@@ -248,6 +313,16 @@ export function clearDeviceCache(): void {
 	devices.clear();
 }
 
+// Get device state
+export function getDeviceState(deviceId: string): DeviceState | null {
+	return deviceStates.get(deviceId) || null;
+}
+
+// Get all device states
+export function getAllDeviceStates(): DeviceState[] {
+	return Array.from(deviceStates.values());
+}
+
 export async function startCookV1(
 	deviceId: string,
 	stages: StartCookV1Stage[]
@@ -300,6 +375,37 @@ export function closeConnection(): void {
 	}
 	connectionPromise = null;
 	devices.clear();
+}
+
+// Initialize and maintain WebSocket connection
+// This should be called on app startup to ensure connection is ready
+export async function initializeConnection(): Promise<void> {
+	try {
+		await getConnection();
+		console.log('[Anova] WebSocket connection initialized');
+	} catch (error) {
+		console.error('[Anova] Failed to initialize WebSocket connection:', error);
+		throw error;
+	}
+}
+
+// Request device state explicitly
+export async function requestDeviceState(deviceId: string): Promise<void> {
+	const ws = await getConnection();
+	
+	if (ws.readyState !== WebSocket.OPEN) {
+		throw new Error('WebSocket is not connected');
+	}
+
+	// Request state by sending a command to get current state
+	const command = {
+		command: 'CMD_APO_REQUEST_STATE',
+		payload: {
+			cookerId: deviceId
+		}
+	};
+	
+	ws.send(JSON.stringify(command));
 }
 
 // Cleanup on process exit
