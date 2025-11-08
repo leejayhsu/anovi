@@ -1,5 +1,5 @@
 <script lang="ts">
-	import Dialpad from './Dialpad.svelte';
+  import Dialpad from "./Dialpad.svelte";
 
 	interface Props {
 		probeEnabled: boolean;
