@@ -43,16 +43,18 @@
 		<button
 			id="probe-setpoint-button"
 			type="button"
-			class="temperature-button"
+			class="temperature-button orange-gradient"
 			onclick={() => (showProbeDialpad = true)}
 			disabled={!probeEnabled}
 		>
-			<span class="temperature-value">{displayProbeTemperature}</span>
-			<span class="temperature-unit">{temperatureUnit === 'C' ? '°C' : '°F'}</span>
+			<div class="temperature-display">
+				<span class="temperature-value">{displayProbeTemperature}</span>
+				<span class="temperature-unit">{temperatureUnit === 'C' ? '°C' : '°F'}</span>
+			</div>
+			<span class="range-text">
+				{temperatureUnit === 'C' ? 'Range: 1-100°C' : 'Range: 33-212°F'}
+			</span>
 		</button>
-		<span class="helper-text">
-			{temperatureUnit === 'C' ? 'Range: 1-100°C' : 'Range: 33-212°F'}
-		</span>
 	</div>
 </section>
 
@@ -82,6 +84,34 @@
 
 	.icon-button:active {
 		transform: scale(0.95);
+	}
+
+	.orange-gradient {
+		background: linear-gradient(135deg, #ee7f35 0%, #dc3e12 100%) !important;
+		border: none !important;
+		box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
+	}
+
+	.orange-gradient:active {
+		box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4) !important;
+	}
+
+	.temperature-button {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.temperature-display {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.range-text {
+		font-size: .1rem;
+		opacity: 0.9;
 	}
 
 	.temperature-button:disabled {

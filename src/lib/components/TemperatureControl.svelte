@@ -49,21 +49,23 @@
 	<div class="form-group">
 		<button
 			type="button"
-			class="temperature-button"
+			class="temperature-button orange-gradient"
 			onclick={() => (showTemperatureDialpad = true)}
 		>
-			<span class="temperature-value">{displayTemperature}</span>
-			<span class="temperature-unit">{temperatureUnit === 'C' ? '°C' : '°F'}</span>
+			<div class="temperature-display">
+				<span class="temperature-value">{displayTemperature}</span>
+				<span class="temperature-unit">{temperatureUnit === 'C' ? '°C' : '°F'}</span>
+			</div>
+			<span class="range-text">
+				{temperatureMode === 'wet'
+					? temperatureUnit === 'C'
+						? 'Range: 25-100°C'
+						: 'Range: 75-212°F'
+					: temperatureUnit === 'C'
+						? 'Range: 25-250°C'
+						: 'Range: 75-482°F'}
+			</span>
 		</button>
-		<span class="helper-text">
-			{temperatureMode === 'wet'
-				? temperatureUnit === 'C'
-					? 'Range: 25-100°C'
-					: 'Range: 75-212°F'
-				: temperatureUnit === 'C'
-					? 'Range: 25-250°C'
-					: 'Range: 75-482°F'}
-		</span>
 	</div>
 </section>
 
@@ -89,6 +91,34 @@
 		font-size: 1.1rem;
 		min-height: auto;
 		flex: none;
+	}
+
+	.orange-gradient {
+		background: linear-gradient(135deg, #ee7f35 0%, #dc3e12 100%) !important;
+		border: none !important;
+		box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
+	}
+
+	.orange-gradient:active {
+		box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4) !important;
+	}
+
+	.temperature-button {
+		display: flex;
+		flex-direction: column;
+		gap: 0.5rem;
+	}
+
+	.temperature-display {
+		display: flex;
+		justify-content: center;
+		align-items: center;
+		gap: 0.5rem;
+	}
+
+	.range-text {
+		font-size: 1rem;
+		opacity: 0.9;
 	}
 </style>
 
