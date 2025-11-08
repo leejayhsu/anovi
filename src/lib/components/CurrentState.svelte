@@ -33,7 +33,6 @@
 				</div>
 			{/if}
 
-			<!-- Temperature Bulbs - Always show both dry and wet -->
 			{#if deviceState.nodes?.temperatureBulbs}
 				<!-- Dry Bulb Temperature -->
 				{#if deviceState.nodes.temperatureBulbs.dry?.current}
@@ -58,36 +57,6 @@
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
 								{deviceState.nodes.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(
-									1
-								)}°F)
-							</span>
-						</div>
-					{/if}
-				{/if}
-
-				<!-- Wet Bulb Temperature -->
-				{#if deviceState.nodes.temperatureBulbs.wet?.current}
-					<div class="state-section-header">
-						<strong>Wet Bulb Temperature</strong>
-						{#if deviceState.nodes.temperatureBulbs.mode === 'wet'}
-							<span class="active-mode-badge">Active</span>
-						{/if}
-					</div>
-
-					<div class="state-row">
-						<span class="state-label">Current:</span>
-						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.wet.current.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(
-								1
-							)}°F)
-						</span>
-					</div>
-
-					{#if deviceState.nodes.temperatureBulbs.wet.setpoint}
-						<div class="state-row">
-							<span class="state-label">Setpoint:</span>
-							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(
 									1
 								)}°F)
 							</span>
