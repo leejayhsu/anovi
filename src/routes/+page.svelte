@@ -22,7 +22,7 @@
 
 	// Use device from WebSocket store
 	let deviceId = $derived($wsStore.deviceId);
-	let deviceVersion = $state<'v1' | 'v2'>('v2'); // TODO: detect from device
+	let deviceVersion = $state<'v1' | 'v2'>('v1'); // Set to v1 for your oven
 
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
