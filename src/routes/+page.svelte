@@ -26,7 +26,7 @@
 
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
-	let temperatureCelsius = $state(180);
+	let temperatureCelsius = $state(177);
 	let temperatureUnit = $state<'C' | 'F'>(data.temperatureUnit);
 
 	// Update temperature unit when data changes
