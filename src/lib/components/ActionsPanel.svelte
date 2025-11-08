@@ -99,15 +99,3 @@
 		</button>
 	</div>
 </section>
-
-<!-- Last Result -->
-{#if lastResult}
-	<section class="card">
-		<h2>Last Result</h2>
-		{#if lastResult.success}
-			<p class="success">✓ Command sent successfully</p>
-		{:else}
-			<p class="error">✗ Error: {lastResult.error || 'Unknown error'}</p>
-		{/if}
-	</section>
-{/if}

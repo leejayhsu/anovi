@@ -8,7 +8,6 @@
 	// Device configuration from store
 	let deviceId = $state('');
 	let deviceVersion = $state<'v1' | 'v2'>('v2');
-	let refreshingDevices = $state(false);
 	let lastResult = $state<{ success: boolean; error?: string } | null>(null);
 	let tokenInput = $state('');
 	let showTokenForm = $state(false);
@@ -126,33 +125,6 @@
 		<!-- Device Configuration -->
 		<section class="card">
 			<h2>Device Configuration</h2>
-			{#if data.tokenStatus.hasToken}
-				<div class="form-group">
-					<form
-						method="POST"
-						action="?/refreshDevices"
-						use:enhance={() => {
-							return async ({ result, update }) => {
-								refreshingDevices = true;
-								await update();
-								refreshingDevices = false;
-								if (result.type === 'success' && result.data) {
-									await invalidateAll();
-									if (result.data.success) {
-										lastResult = { success: true };
-									} else {
-										lastResult = result.data as { success: boolean; error?: string };
-									}
-								}
-							};
-						}}
-					>
-						<button type="submit" disabled={refreshingDevices} class="btn-secondary">
-							{refreshingDevices ? 'Refreshing...' : 'Refresh Devices'}
-						</button>
-					</form>
-				</div>
-			{/if}
 			{#if data.discoveredDevices && data.discoveredDevices.length > 0}
 				<div class="form-group">
 					<label for="device-select">Select Device</label>
