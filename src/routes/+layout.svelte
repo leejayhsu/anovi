@@ -34,7 +34,7 @@
 	.header {
 		background: white;
 		border-bottom: 2px solid #e0e0e0;
-		padding: 1rem 2rem;
+		padding: 0.5rem 2rem;
 		position: sticky;
 		top: 0;
 		z-index: 100;
@@ -54,7 +54,7 @@
 	}
 
 	.logo {
-		font-size: 1.25rem;
+		font-size: 1.1rem;
 		font-weight: 600;
 		color: #333;
 		text-decoration: none;
@@ -71,14 +71,14 @@
 	}
 
 	.settings-link {
-		padding: 0.5rem 1rem;
+		padding: 0.375rem 0.875rem;
 		border-radius: 6px;
 		text-decoration: none;
 		color: #666;
-		font-size: 1rem;
+		font-size: 0.95rem;
 		transition: all 0.2s;
 		touch-action: manipulation;
-		min-height: 44px;
+		min-height: 36px;
 		display: flex;
 		align-items: center;
 		gap: 0.5rem;
@@ -100,7 +100,7 @@
 
 	@media (max-width: 768px) {
 		.header {
-			padding: 1rem;
+			padding: 0.5rem 1rem;
 		}
 
 		.logo {
