@@ -116,8 +116,8 @@
 		gap: 0.5rem;
 	}
 
-	.range-text {
-		font-size: 1rem;
+	.temperature-button .range-text {
+		font-size: 0.8rem !important;
 		opacity: 0.9;
 	}
 </style>
