@@ -210,7 +210,7 @@ function handleMessage(message: any): void {
 
 			// Store the state
 			deviceStates.set(deviceId, state);
-			console.log(`[State Update] Device ${deviceId}:\n${JSON.stringify(state, null, 2)}`);
+			// console.log(`[State Update] Device ${deviceId}:\n${JSON.stringify(state, null, 2)}`);
 		}
 	}
 

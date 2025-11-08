@@ -46,42 +46,6 @@ export async function load() {
 }
 
 export const actions = {
-	getDeviceState: async ({ request }) => {
-		const data = await request.formData();
-		const deviceId = data.get('deviceId')?.toString();
-
-		if (!deviceId) {
-			return {
-				success: false,
-				error: 'Device ID is required',
-				state: null
-			};
-		}
-
-		try {
-			// Request fresh state from device
-			try {
-				await anova.requestDeviceState(deviceId);
-			} catch (error) {
-				console.error('Error requesting device state:', error);
-				// Continue to return cached state even if request fails
-			}
-			
-			// Return the current state (might be cached or newly updated)
-			const state = anova.getDeviceState(deviceId);
-			return {
-				success: true,
-				state
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Unknown error',
-				state: null
-			};
-		}
-	},
-
 	setToken: async ({ request }) => {
 		// Check if token is set via environment variable
 		if (isTokenFromEnv()) {
