@@ -40,7 +40,7 @@
 	</div>
 	{#if probeEnabled}
 		<div class="form-group">
-			<label>Temperature Unit</label>
+			<div class="label-text">Temperature Unit</div>
 			<div class="toggle-group">
 				<button
 					type="button"
@@ -61,8 +61,13 @@
 			</div>
 		</div>
 		<div class="form-group">
-			<label>Probe Setpoint</label>
-			<button type="button" class="temperature-button" onclick={() => (showProbeDialpad = true)}>
+			<label for="probe-setpoint-button">Probe Setpoint</label>
+			<button
+				id="probe-setpoint-button"
+				type="button"
+				class="temperature-button"
+				onclick={() => (showProbeDialpad = true)}
+			>
 				<span class="temperature-value">{displayProbeTemperature}</span>
 				<span class="temperature-unit">{probeTemperatureUnit === 'C' ? '°C' : '°F'}</span>
 			</button>
