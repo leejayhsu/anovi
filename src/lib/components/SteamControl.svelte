@@ -12,7 +12,6 @@
 <section class="card">
 	<h2>Steam Control</h2>
 	<div class="form-group">
-		<label>Steam Mode</label>
 		<div class="toggle-group toggle-group-vertical">
 			<button
 				type="button"

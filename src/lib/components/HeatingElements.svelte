@@ -14,7 +14,6 @@
 <section class="card">
 	<h2>Heating Elements</h2>
 	<div class="form-group">
-		<label>Select Heating Elements</label>
 		<div class="toggle-group toggle-group-vertical">
 			<button
 				type="button"
