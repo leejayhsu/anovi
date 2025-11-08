@@ -1,26 +1,18 @@
 // Client-side WebSocket store for Anova API
 import { writable } from 'svelte/store';
-import type { DeviceState } from '$lib/anova.js';
-
-interface DeviceInfo {
-	cookerId: string;
-	name: string;
-	pairedAt: string;
-	type: 'oven_v1' | 'oven_v2';
-}
+import type { ApoState } from '$lib/types';
 
 interface WebSocketState {
 	connected: boolean;
-	devices: Map<string, DeviceInfo>;
-	deviceStates: Map<string, DeviceState>;
+	deviceId: string;
+	deviceState?: ApoState;
 	error: string | null;
 }
 
 function createWebSocketStore() {
 	const initialState: WebSocketState = {
 		connected: false,
-		devices: new Map(),
-		deviceStates: new Map(),
+		deviceId: '',
 		error: null
 	};
 
@@ -42,142 +34,32 @@ function createWebSocketStore() {
 	}
 
 	function handleMessage(message: any): void {
-		// Handle device discovery messages
+		// Handle device discovery messages - just take the first device
 		if (message.command === 'EVENT_APO_WIFI_LIST' && Array.isArray(message.payload)) {
-			update(state => {
-				const newDevices = new Map(state.devices);
-				for (const device of message.payload) {
-					if (device.cookerId && device.type) {
-						const deviceInfo: DeviceInfo = {
-							cookerId: device.cookerId,
-							name: device.name || 'Anova Precision Oven',
-							pairedAt: device.pairedAt || new Date().toISOString(),
-							type: device.type === 'oven_v1' ? 'oven_v1' : 'oven_v2'
-						};
-						newDevices.set(device.cookerId, deviceInfo);
-					}
+			if (message.payload.length > 0) {
+				const device = message.payload[0];
+				if (device.cookerId) {
+					update(state => ({
+						...state,
+						deviceId: device.cookerId
+					}));
+					console.log(`[WebSocket] Discovered device: ${device.cookerId}`);
 				}
-				return { ...state, devices: newDevices };
-			});
+			}
 		}
 
-		// Handle state update messages (commands containing 'STATE')
-		if (message.command && typeof message.command === 'string' && message.command.includes('STATE')) {
+		// Handle state update messages - store raw payload.state
+		if (message.command === 'EVENT_APO_STATE') {
 			const payload = message.payload;
+			const deviceId = payload?.cookerId;
 			
-			// Extract device ID from payload
-			let deviceId: string | undefined;
-			if (typeof payload === 'object' && payload !== null) {
-				deviceId = payload.cookerId || payload.id || payload.deviceId;
-			}
-
-			if (deviceId) {
-				update(state => {
-					const newDeviceStates = new Map(state.deviceStates);
-					
-					// Parse and store state information
-					const deviceState: DeviceState = {
-						deviceId,
-						lastUpdated: new Date(),
-						rawPayload: payload
-					};
-
-					// All sensor data is in payload.state.nodes
-					const nodes = payload.state?.nodes;
-
-					// Extract mode
-					if (payload.state?.mode) {
-						deviceState.mode = payload.state.mode;
-					}
-
-					// Extract temperature bulbs information
-					if (nodes?.temperatureBulbs) {
-						deviceState.temperatureBulbs = {
-							mode: nodes.temperatureBulbs.mode,
-							dry: nodes.temperatureBulbs.dry ? {
-								current: nodes.temperatureBulbs.dry.current,
-								setpoint: nodes.temperatureBulbs.dry.setpoint
-							} : undefined,
-							wet: nodes.temperatureBulbs.wet ? {
-								current: nodes.temperatureBulbs.wet.current,
-								setpoint: nodes.temperatureBulbs.wet.setpoint
-							} : undefined
-						};
-					}
-
-					// Extract steam generators / humidity information
-					if (nodes?.steamGenerators) {
-						deviceState.steamGenerators = {
-							mode: nodes.steamGenerators.mode,
-							relativeHumidity: nodes.steamGenerators.relativeHumidity,
-							steamPercentage: nodes.steamGenerators.steamPercentage
-						};
-					}
-
-					// Extract temperature probe information
-					if (nodes?.temperatureProbe) {
-						deviceState.temperatureProbe = {
-							current: nodes.temperatureProbe.current,
-							setpoint: nodes.temperatureProbe.setpoint,
-							connected: nodes.temperatureProbe.connected !== false
-						};
-					}
-
-					// Extract timer information
-					if (nodes?.timer) {
-						deviceState.timer = {
-							mode: nodes.timer.mode || 'idle',
-							current: nodes.timer.current || 0,
-							initial: nodes.timer.initial || 0
-						};
-					}
-
-					// Extract cook information
-					if (payload.state?.cook) {
-						deviceState.cook = {
-							activeStageId: payload.state.cook.activeStageId,
-							activeStageIndex: payload.state.cook.activeStageIndex,
-							activeStageSecondsElapsed: payload.state.cook.activeStageSecondsElapsed,
-							secondsElapsed: payload.state.cook.secondsElapsed,
-							cookId: payload.state.cook.cookId
-						};
-					}
-
-					// Extract heating elements
-					if (nodes?.heatingElements) {
-						deviceState.heatingElements = nodes.heatingElements;
-					}
-
-					// Extract fan
-					if (nodes?.fan) {
-						deviceState.fan = nodes.fan;
-					}
-
-					// Extract vent
-					if (nodes?.vent) {
-						deviceState.vent = nodes.vent;
-					}
-
-					// Extract door
-					if (nodes?.door) {
-						deviceState.door = nodes.door;
-					}
-
-					// Extract lamp
-					if (nodes?.lamp) {
-						deviceState.lamp = nodes.lamp;
-					}
-
-					// Extract water tank
-					if (nodes?.waterTank) {
-						deviceState.waterTank = nodes.waterTank;
-					}
-
-					newDeviceStates.set(deviceId, deviceState);
-					console.log(`[WebSocket] State update for device ${deviceId}`, deviceState);
-					
-					return { ...state, deviceStates: newDeviceStates };
-				});
+			if (deviceId && payload.state) {
+				update(state => ({
+					...state,
+					deviceId,
+					deviceState: payload.state
+				}));
+				console.log(`[WebSocket] State update for device ${deviceId}`);
 			}
 		}
 	}
@@ -297,4 +179,3 @@ function createWebSocketStore() {
 }
 
 export const wsStore = createWebSocketStore();
-

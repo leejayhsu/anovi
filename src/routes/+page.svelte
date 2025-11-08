@@ -4,6 +4,9 @@
 		celsiusToFahrenheit,
 		fahrenheitToCelsius,
 		generateUUID,
+		createSetProbeV1Command,
+		createSetProbeV2Command,
+		createSetTemperatureUnitCommand,
 		type StartCookV1Stage,
 		type StartCookV2Stage
 	} from '$lib/anova.js';
@@ -14,65 +17,13 @@
 	import ProbeControl from '$lib/components/ProbeControl.svelte';
 	import CurrentState from '$lib/components/CurrentState.svelte';
 	import ActionsPanel from '$lib/components/ActionsPanel.svelte';
-	import { deviceConfig } from '$lib/stores/device.js';
 	import { wsStore } from '$lib/stores/websocket.svelte.js';
 
 	let { data } = $props();
 
-	// Device configuration from store
-	let deviceId = $state('');
-	let deviceVersion = $state<'v1' | 'v2'>('v2');
-
-	// Sync with store
-	$effect(() => {
-		const unsubscribe = deviceConfig.subscribe((config) => {
-			deviceId = config.deviceId;
-			deviceVersion = config.deviceVersion;
-		});
-		return unsubscribe;
-	});
-
-	// Combine server-loaded devices with WebSocket-discovered devices
-	let allDevices = $derived(() => {
-		const devices = new Map<string, any>();
-		// Add server-loaded devices
-		if (data.discoveredDevices) {
-			for (const device of data.discoveredDevices) {
-				devices.set(device.cookerId, device);
-			}
-		}
-		// Add/update with WebSocket-discovered devices
-		for (const [id, device] of $wsStore.devices) {
-			devices.set(id, device);
-		}
-		return Array.from(devices.values());
-	});
-
-	// Auto-select device version based on discovered devices
-	$effect(() => {
-		const devices = allDevices();
-		if (devices && devices.length > 0 && !deviceId) {
-			const firstDevice = devices[0];
-			deviceId = firstDevice.cookerId;
-			deviceVersion = firstDevice.type === 'oven_v1' ? 'v1' : 'v2';
-			deviceConfig.set({ deviceId, deviceVersion });
-		}
-	});
-
-	// Update device version when device ID changes
-	$effect(() => {
-		const devices = allDevices();
-		if (deviceId && devices) {
-			const selectedDevice = devices.find((d: any) => d.cookerId === deviceId);
-			if (selectedDevice) {
-				const version = selectedDevice.type === 'oven_v1' ? 'v1' : 'v2';
-				if (deviceVersion !== version) {
-					deviceVersion = version;
-					deviceConfig.set({ deviceId, deviceVersion });
-				}
-			}
-		}
-	});
+	// Use device from WebSocket store
+	let deviceId = $derived($wsStore.deviceId);
+	let deviceVersion = $state<'v1' | 'v2'>('v2'); // TODO: detect from device
 
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
@@ -274,27 +225,21 @@
 
 	// Automatically set probe when enabled or temperature changes
 	$effect(() => {
-		if (probeEnabled && deviceId && probeSetpointCelsius) {
-			// Debounce the API call to avoid too many requests
-			const timeoutId = setTimeout(async () => {
+		if (probeEnabled && deviceId && probeSetpointCelsius && $wsStore.connected) {
+			// Debounce the command to avoid too many requests
+			const timeoutId = setTimeout(() => {
 				try {
-					const formData = new FormData();
-					formData.append('deviceId', deviceId);
-					formData.append('setpointCelsius', probeSetpointCelsius.toString());
-					formData.append('deviceVersion', deviceVersion);
+					// Create command based on device version
+					const command = deviceVersion === 'v1'
+						? createSetProbeV1Command(deviceId, probeSetpointCelsius, celsiusToFahrenheit(probeSetpointCelsius))
+						: createSetProbeV2Command(deviceId, probeSetpointCelsius);
 					
-					const response = await fetch('?/setProbe', {
-						method: 'POST',
-						body: formData
-					});
-					
-					if (response.ok) {
-						const result = await response.json();
-						if (result.type === 'success' && result.data) {
-							lastResult = result.data as { success: boolean; error?: string };
-						} else if (result.type === 'failure' && result.data) {
-							lastResult = result.data as { success: boolean; error?: string };
-						}
+					// Send command via WebSocket
+					const sent = wsStore.sendCommand(command);
+					if (sent) {
+						lastResult = { success: true };
+					} else {
+						lastResult = { success: false, error: 'WebSocket not connected' };
 					}
 				} catch (error) {
 					console.error('Error setting probe:', error);
@@ -327,28 +272,20 @@
 	}
 
 	// Handle temperature unit change - automatically set on device
-	async function handleUnitChange(newUnit: 'C' | 'F') {
+	function handleUnitChange(newUnit: 'C' | 'F') {
 		temperatureUnit = newUnit;
 		
 		// Automatically set the unit on the device if device is selected
-		if (deviceId) {
+		if (deviceId && $wsStore.connected) {
 			try {
-				const formData = new FormData();
-				formData.append('deviceId', deviceId);
-				formData.append('unit', newUnit);
+				// Create and send command via WebSocket
+				const command = createSetTemperatureUnitCommand(deviceId, newUnit);
+				const sent = wsStore.sendCommand(command);
 				
-				const response = await fetch('?/setTemperatureUnit', {
-					method: 'POST',
-					body: formData
-				});
-				
-				if (response.ok) {
-					const result = await response.json();
-					if (result.type === 'success' && result.data) {
-						lastResult = result.data as { success: boolean; error?: string };
-					} else if (result.type === 'failure' && result.data) {
-						lastResult = result.data as { success: boolean; error?: string };
-					}
+				if (sent) {
+					lastResult = { success: true };
+				} else {
+					lastResult = { success: false, error: 'WebSocket not connected' };
 				}
 			} catch (error) {
 				console.error('Error setting temperature unit:', error);
@@ -389,7 +326,7 @@
 		wsStore.disconnect();
 	});
 
-	// Request device state when deviceId changes
+	// Request device state when connected
 	$effect(() => {
 		if (deviceId && $wsStore.connected) {
 			// Request state after a short delay to ensure connection is stable
@@ -411,11 +348,6 @@
 
 		return () => clearInterval(intervalId);
 	});
-
-	// Get current device state from WebSocket store
-	let currentDeviceState = $derived(
-		deviceId ? ($wsStore.deviceStates.get(deviceId) ?? null) : null
-	);
 </script>
 
 <svelte:head>
@@ -487,7 +419,7 @@
 			/>
 
 			<CurrentState
-				deviceState={currentDeviceState}
+				deviceState={$wsStore.deviceState}
 				deviceId={deviceId}
 				wsConnected={$wsStore.connected}
 			/>

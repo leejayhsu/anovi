@@ -1,11 +1,17 @@
 <script lang="ts">
-	import { enhance } from '$app/forms';
+	import { wsStore } from '$lib/stores/websocket.svelte.js';
+	import {
+		createStartCookV1Command,
+		createStartCookV2Command,
+		createStopCookCommand,
+	} from '$lib/anova.js';
+  import type { StartCookV1Stage, StartCookV2Stage } from '$lib/types';
 
 	interface Props {
 		deviceId: string;
 		deviceVersion: 'v1' | 'v2';
 		hasActiveHeatingElement: boolean;
-		buildStageData: () => any;
+		buildStageData: () => StartCookV1Stage | StartCookV2Stage;
 		lastResult: { success: boolean; error?: string } | null;
 		wsConnected: boolean;
 		wsError: string | null;
@@ -22,6 +28,41 @@
 		wsError,
 		onResultChange
 	}: Props = $props();
+
+	function handleStartCook() {
+		try {
+			const stageData = buildStageData();
+			const command = deviceVersion === 'v1'
+				? createStartCookV1Command({ deviceId, stages: [stageData as StartCookV1Stage] })
+				: createStartCookV2Command({ deviceId, stages: [stageData as StartCookV2Stage] });
+			
+			const sent = wsStore.sendCommand(command);
+			if (sent) {
+				onResultChange({ success: true });
+			} else {
+				onResultChange({ success: false, error: 'WebSocket not connected' });
+			}
+		} catch (error) {
+			console.error('Error starting cook:', error);
+			onResultChange({ success: false, error: 'Failed to start cook' });
+		}
+	}
+
+	function handleStopCook() {
+		try {
+			const command = createStopCookCommand(deviceId);
+			const sent = wsStore.sendCommand(command);
+			
+			if (sent) {
+				onResultChange({ success: true });
+			} else {
+				onResultChange({ success: false, error: 'WebSocket not connected' });
+			}
+		} catch (error) {
+			console.error('Error stopping cook:', error);
+			onResultChange({ success: false, error: 'Failed to stop cook' });
+		}
+	}
 </script>
 
 <!-- WebSocket Connection Status -->
@@ -39,40 +80,22 @@
 <section class="card">
 	<h2>Actions</h2>
 	<div class="button-group-vertical">
-		<form
-			method="POST"
-			action="?/startCook"
-			use:enhance={() => {
-				return async ({ result, update }) => {
-					await update();
-					if (result.type === 'success' && result.data) {
-						onResultChange(result.data as { success: boolean; error?: string });
-					}
-				};
-			}}
+		<button
+			type="button"
+			class="btn-primary btn-action"
+			disabled={!hasActiveHeatingElement || !wsConnected}
+			onclick={handleStartCook}
 		>
-			<input type="hidden" name="deviceId" value={deviceId} />
-			<input type="hidden" name="deviceVersion" value={deviceVersion} />
-			<input type="hidden" name="stageData" value={JSON.stringify(buildStageData())} />
-			<button type="submit" class="btn-primary btn-action" disabled={!hasActiveHeatingElement}>
-				Start Cook
-			</button>
-		</form>
-		<form
-			method="POST"
-			action="?/stopCook"
-			use:enhance={() => {
-				return async ({ result, update }) => {
-					await update();
-					if (result.type === 'success' && result.data) {
-						onResultChange(result.data as { success: boolean; error?: string });
-					}
-				};
-			}}
+			Start Cook
+		</button>
+		<button
+			type="button"
+			class="btn-danger btn-action"
+			disabled={!wsConnected}
+			onclick={handleStopCook}
 		>
-			<input type="hidden" name="deviceId" value={deviceId} />
-			<button type="submit" class="btn-danger btn-action">Stop Cook</button>
-		</form>
+			Stop Cook
+		</button>
 	</div>
 </section>
 

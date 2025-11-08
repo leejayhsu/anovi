@@ -1,8 +1,8 @@
 <script lang="ts">
-	import type { DeviceState } from '$lib/anova';
+	import type { ApoState } from '$lib/types';
 
 	interface Props {
-		deviceState: DeviceState | null;
+		deviceState?: ApoState;
 		deviceId: string;
 		wsConnected: boolean;
 	}
@@ -24,22 +24,22 @@
 		<h2>Current State</h2>
 		<div class="state-info">
 			<!-- Mode -->
-			{#if deviceState.mode}
+			{#if deviceState.state?.mode}
 				<div class="state-row">
 					<span class="state-label">Mode:</span>
-					<span class="state-value status-{deviceState.mode}">
-						{deviceState.mode}
+					<span class="state-value status-{deviceState.state.mode}">
+						{deviceState.state.mode}
 					</span>
 				</div>
 			{/if}
 
 			<!-- Temperature Bulbs - Always show both dry and wet -->
-			{#if deviceState.temperatureBulbs}
+			{#if deviceState.nodes?.temperatureBulbs}
 				<!-- Dry Bulb Temperature -->
-				{#if deviceState.temperatureBulbs.dry?.current}
+				{#if deviceState.nodes.temperatureBulbs.dry?.current}
 					<div class="state-section-header">
 						<strong>Dry Bulb Temperature</strong>
-						{#if deviceState.temperatureBulbs.mode === 'dry'}
+						{#if deviceState.nodes.temperatureBulbs.mode === 'dry'}
 							<span class="active-mode-badge">Active</span>
 						{/if}
 					</div>
@@ -47,27 +47,27 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.temperatureBulbs.dry.current.celsius.toFixed(1)}°C
-							({deviceState.temperatureBulbs.dry.current.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureBulbs.dry.current.celsius.toFixed(1)}°C
+							({deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(1)}°F)
 						</span>
 					</div>
 
-					{#if deviceState.temperatureBulbs.dry.setpoint}
+					{#if deviceState.nodes.temperatureBulbs.dry.setpoint}
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C
-								({deviceState.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(1)}°F)
+								{deviceState.nodes.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C
+								({deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(1)}°F)
 							</span>
 						</div>
 					{/if}
 				{/if}
 
 				<!-- Wet Bulb Temperature -->
-				{#if deviceState.temperatureBulbs.wet?.current}
+				{#if deviceState.nodes.temperatureBulbs.wet?.current}
 					<div class="state-section-header">
 						<strong>Wet Bulb Temperature</strong>
-						{#if deviceState.temperatureBulbs.mode === 'wet'}
+						{#if deviceState.nodes.temperatureBulbs.mode === 'wet'}
 							<span class="active-mode-badge">Active</span>
 						{/if}
 					</div>
@@ -75,17 +75,17 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.temperatureBulbs.wet.current.celsius.toFixed(1)}°C
-							({deviceState.temperatureBulbs.wet.current.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureBulbs.wet.current.celsius.toFixed(1)}°C
+							({deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(1)}°F)
 						</span>
 					</div>
 
-					{#if deviceState.temperatureBulbs.wet.setpoint}
+					{#if deviceState.nodes.temperatureBulbs.wet.setpoint}
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C
-								({deviceState.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(1)}°F)
+								{deviceState.nodes.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C
+								({deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(1)}°F)
 							</span>
 						</div>
 					{/if}
@@ -93,99 +93,70 @@
 			{/if}
 
 			<!-- Humidity -->
-			{#if deviceState.steamGenerators?.relativeHumidity?.current !== undefined}
+			{#if deviceState.nodes?.steamGenerators?.relativeHumidity?.current !== undefined}
 				<div class="state-section-header">
 					<strong>Humidity</strong>
-					{#if deviceState.steamGenerators.mode !== 'idle'}
+					{#if deviceState.nodes.steamGenerators.mode !== 'idle'}
 						<span class="active-mode-badge">Active</span>
 					{/if}
 				</div>
 
 				<div class="state-row">
 					<span class="state-label">Current:</span>
-					<span class="state-value">{deviceState.steamGenerators.relativeHumidity.current}%</span>
+					<span class="state-value">{deviceState.nodes.steamGenerators.relativeHumidity.current}%</span>
 				</div>
 
-				{#if deviceState.steamGenerators.relativeHumidity.setpoint !== undefined}
+				{#if deviceState.nodes.steamGenerators.relativeHumidity.setpoint !== undefined}
 					<div class="state-row">
 						<span class="state-label">Setpoint:</span>
-						<span class="state-value">{deviceState.steamGenerators.relativeHumidity.setpoint}%</span>
+						<span class="state-value">{deviceState.nodes.steamGenerators.relativeHumidity.setpoint}%</span>
 					</div>
 				{/if}
 			{/if}
 
 			<!-- Temperature Probe -->
-			{#if deviceState.temperatureProbe?.connected}
+			{#if deviceState.nodes?.temperatureProbe?.connected}
 				<div class="state-section-header">
 					<strong>Temperature Probe</strong>
 				</div>
 
-				{#if deviceState.temperatureProbe.current}
+				{#if deviceState.nodes.temperatureProbe.current}
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.temperatureProbe.current.celsius.toFixed(1)}°C
-							({deviceState.temperatureProbe.current.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureProbe.current.celsius.toFixed(1)}°C
+							({deviceState.nodes.temperatureProbe.current.fahrenheit.toFixed(1)}°F)
 						</span>
 					</div>
 				{/if}
 
-				{#if deviceState.temperatureProbe.setpoint}
+				{#if deviceState.nodes.temperatureProbe.setpoint}
 					<div class="state-row">
 						<span class="state-label">Setpoint:</span>
 						<span class="state-value">
-							{deviceState.temperatureProbe.setpoint.celsius.toFixed(1)}°C
-							({deviceState.temperatureProbe.setpoint.fahrenheit.toFixed(1)}°F)
+							{deviceState.nodes.temperatureProbe.setpoint.celsius.toFixed(1)}°C
+							({deviceState.nodes.temperatureProbe.setpoint.fahrenheit.toFixed(1)}°F)
 						</span>
 					</div>
 				{/if}
 			{/if}
 
 			<!-- Timer -->
-			{#if deviceState.timer && deviceState.timer.mode !== 'idle'}
+			{#if deviceState.nodes?.timer && deviceState.nodes.timer.mode !== 'idle'}
 				<div class="state-section-header">
 					<strong>Timer</strong>
 				</div>
 				<div class="state-row">
 					<span class="state-label">Current:</span>
 					<span class="state-value">
-						{formatTimeRemaining(deviceState.timer.current)}
+						{formatTimeRemaining(deviceState.nodes.timer.current)}
 					</span>
 				</div>
-				{#if deviceState.timer.initial !== undefined && deviceState.timer.initial > 0}
+				{#if deviceState.nodes.timer.initial !== undefined && deviceState.nodes.timer.initial > 0}
 					<div class="state-row">
 						<span class="state-label">Initial:</span>
 						<span class="state-value">
-							{formatTimeRemaining(deviceState.timer.initial)}
-						</span>
-					</div>
-				{/if}
-			{/if}
-
-			<!-- Cook Information -->
-			{#if deviceState.cook}
-				<div class="state-section-header">
-					<strong>Cook Progress</strong>
-				</div>
-				{#if deviceState.cook.activeStageIndex !== undefined}
-					<div class="state-row">
-						<span class="state-label">Stage:</span>
-						<span class="state-value">{deviceState.cook.activeStageIndex + 1}</span>
-					</div>
-				{/if}
-				{#if deviceState.cook.activeStageSecondsElapsed !== undefined}
-					<div class="state-row">
-						<span class="state-label">Stage Time:</span>
-						<span class="state-value">
-							{formatTimeRemaining(deviceState.cook.activeStageSecondsElapsed)}
-						</span>
-					</div>
-				{/if}
-				{#if deviceState.cook.secondsElapsed !== undefined}
-					<div class="state-row">
-						<span class="state-label">Total Time:</span>
-						<span class="state-value">
-							{formatTimeRemaining(deviceState.cook.secondsElapsed)}
+							{formatTimeRemaining(deviceState.nodes.timer.initial)}
 						</span>
 					</div>
 				{/if}
@@ -194,7 +165,7 @@
 			<div class="state-row last-update">
 				<span class="state-label">Updated:</span>
 				<span class="state-value">
-					{new Date(deviceState.lastUpdated).toLocaleTimeString()}
+					{new Date(deviceState.updatedTimestamp).toLocaleTimeString()}
 				</span>
 			</div>
 		</div>

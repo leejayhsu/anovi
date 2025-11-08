@@ -5,17 +5,7 @@ import * as anova from '$lib/anova.server.js';
 export async function load() {
 	const hasTokenValue = hasToken();
 	const isFromEnv = isTokenFromEnv();
-	let discoveredDevices = anova.getDiscoveredDevices();
-	
-	// If token exists but no devices found, try to fetch them
-	if (hasTokenValue && discoveredDevices.length === 0) {
-		try {
-			discoveredDevices = await anova.fetchDevices();
-		} catch (error) {
-			console.error('Error fetching devices:', error);
-			// Continue with empty array if fetch fails
-		}
-	}
+	const discoveredDevices = anova.getDiscoveredDevices();
 	
 	return {
 		tokenStatus: {
@@ -56,38 +46,8 @@ export const actions = {
 
 		setToken(token);
 
-		// Close existing connection to force reconnect with new token
-		anova.closeConnection();
-
-		// Try to fetch devices after setting token
-		try {
-			await anova.fetchDevices();
-		} catch (error) {
-			console.error('Error fetching devices after setting token:', error);
-		}
-
 		return {
 			success: true
 		};
-	},
-
-	refreshDevices: async () => {
-		try {
-			// Clear cache to force fresh fetch
-			anova.clearDeviceCache();
-			// Close connection to force reconnect
-			anova.closeConnection();
-			const devices = await anova.fetchDevices();
-			return {
-				success: true,
-				devices
-			};
-		} catch (error) {
-			return {
-				success: false,
-				error: error instanceof Error ? error.message : 'Unknown error'
-			};
-		}
 	}
 };
-

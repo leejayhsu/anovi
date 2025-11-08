@@ -1,11 +1,11 @@
 // Client-side reactive oven state store
 // This uses Svelte 5's $state rune for reactivity
 
-import type { DeviceState } from '$lib/anova';
+import type { EventApoStatePayload } from '$lib/anova';
 
 export interface OvenStateStore {
 	deviceId: string | null;
-	state: DeviceState | null;
+	state: EventApoStatePayload | null;
 	isLoading: boolean;
 	error: string | null;
 }
@@ -19,7 +19,7 @@ export const ovenState = $state<OvenStateStore>({
 });
 
 // Helper function to update state
-export function updateOvenState(deviceId: string, state: DeviceState | null) {
+export function updateOvenState(deviceId: string, state: EventApoStatePayload | null) {
 	ovenState.deviceId = deviceId;
 	ovenState.state = state;
 	ovenState.isLoading = false;

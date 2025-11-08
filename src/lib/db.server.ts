@@ -2,6 +2,7 @@ import Database from 'better-sqlite3';
 import { building } from '$app/environment';
 import { mkdirSync } from 'fs';
 import { dirname } from 'path';
+import type { DeviceInfo } from './anova';
 
 // Server-only database module
 // This file should only be imported in server-side code
@@ -95,12 +96,7 @@ export function hasToken(): boolean {
 	return getToken() !== null;
 }
 
-export interface DeviceInfo {
-	cookerId: string;
-	name: string;
-	pairedAt: string;
-	type: 'oven_v1' | 'oven_v2';
-}
+
 
 export function saveDevice(device: DeviceInfo): void {
 	const database = getDatabase();
@@ -140,27 +136,6 @@ export function getDevices(): DeviceInfo[] {
 		pairedAt: row.pairedAt,
 		type: row.type === 'oven_v1' ? 'oven_v1' : 'oven_v2'
 	}));
-}
-
-export function getDevice(cookerId: string): DeviceInfo | null {
-	const database = getDatabase();
-	const row = database
-		.prepare('SELECT cookerId, name, pairedAt, type FROM devices WHERE cookerId = ?')
-		.get(cookerId) as
-		| {
-				cookerId: string;
-				name: string;
-				pairedAt: string;
-				type: string;
-			}
-		| undefined;
-	if (!row) return null;
-	return {
-		cookerId: row.cookerId,
-		name: row.name,
-		pairedAt: row.pairedAt,
-		type: row.type === 'oven_v1' ? 'oven_v1' : 'oven_v2'
-	};
 }
 
 // Cleanup on process exit
