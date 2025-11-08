@@ -39,6 +39,7 @@
 		"@types/better-sqlite3": "^7.6.13",
 		"@types/ws": "^8.18.1",
 		"better-sqlite3": "^12.4.1",
+		"lucide-svelte": "^0.553.0",
 		"uuid": "^10.0.0",
 		"ws": "^8.18.3"
 	}

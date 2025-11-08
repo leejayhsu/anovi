@@ -1,5 +1,6 @@
 <script lang="ts">
 	import TimeSelector from './TimeSelector.svelte';
+	import { Timer } from 'lucide-svelte';
 
 	interface Props {
 		timerEnabled: boolean;
@@ -31,55 +32,91 @@
 </script>
 
 <section class="card">
-	<h2>Timer</h2>
-	<div class="form-group">
+	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+		<h2 style="margin: 0;">Timer</h2>
 		<button
 			type="button"
-			class="toggle-button toggle-button-large"
+			class="icon-button"
 			class:active={timerEnabled}
 			onclick={() => onEnabledChange(!timerEnabled)}
+			title={timerEnabled ? 'Disable Timer' : 'Enable Timer'}
 		>
-			Enable Timer
+			<Timer size={24} />
 		</button>
 	</div>
-	{#if timerEnabled}
-		<div class="form-group">
-			<label>Duration</label>
-			<button type="button" class="temperature-button" onclick={() => (showTimerSelector = true)}>
-				<span class="temperature-value">{formatTime(timerSeconds)}</span>
+	<div class="form-group">
+		<label>Duration</label>
+		<button 
+			type="button" 
+			class="temperature-button" 
+			onclick={() => (showTimerSelector = true)}
+			disabled={!timerEnabled}
+		>
+			<span class="temperature-value">{formatTime(timerSeconds)}</span>
+		</button>
+	</div>
+	<div class="form-group">
+		<label>Start Type</label>
+		<div class="toggle-group toggle-group-vertical">
+			<button
+				type="button"
+				class="toggle-button"
+				class:active={timerStartType === 'immediately'}
+				onclick={() => onStartTypeChange('immediately')}
+				disabled={!timerEnabled}
+			>
+				Immediately
+			</button>
+			<button
+				type="button"
+				class="toggle-button"
+				class:active={timerStartType === 'when-preheated'}
+				onclick={() => onStartTypeChange('when-preheated')}
+				disabled={!timerEnabled}
+			>
+				When Preheated
+			</button>
+			<button
+				type="button"
+				class="toggle-button"
+				class:active={timerStartType === 'manual'}
+				onclick={() => onStartTypeChange('manual')}
+				disabled={!timerEnabled}
+			>
+				Manual
 			</button>
 		</div>
-		<div class="form-group">
-			<label>Start Type</label>
-			<div class="toggle-group toggle-group-vertical">
-				<button
-					type="button"
-					class="toggle-button"
-					class:active={timerStartType === 'immediately'}
-					onclick={() => onStartTypeChange('immediately')}
-				>
-					Immediately
-				</button>
-				<button
-					type="button"
-					class="toggle-button"
-					class:active={timerStartType === 'when-preheated'}
-					onclick={() => onStartTypeChange('when-preheated')}
-				>
-					When Preheated
-				</button>
-				<button
-					type="button"
-					class="toggle-button"
-					class:active={timerStartType === 'manual'}
-					onclick={() => onStartTypeChange('manual')}
-				>
-					Manual
-				</button>
-			</div>
-		</div>
-	{/if}
+	</div>
 </section>
+
+<style>
+	.icon-button {
+		background: none;
+		border: 2px solid var(--border-color, #ccc);
+		border-radius: 8px;
+		padding: 8px;
+		cursor: pointer;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+		transition: all 0.2s ease;
+		color: var(--text-secondary, #666);
+	}
+
+	.icon-button:hover {
+		background: var(--hover-bg, #f0f0f0);
+	}
+
+	.icon-button.active {
+		background: var(--primary-color, #007bff);
+		border-color: var(--primary-color, #007bff);
+		color: white;
+	}
+
+	.icon-button:active {
+		transform: scale(0.95);
+	}
+</style>
 
 {#if showTimerSelector}
 	<TimeSelector
