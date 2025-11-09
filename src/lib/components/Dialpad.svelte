@@ -131,12 +131,12 @@
 	}
 
 	.dialpad-container {
-		background: white;
+		background: #3a3a3a;
 		border-radius: 16px;
 		padding: 1rem;
 		width: 100%;
 		max-width: 450px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 		display: flex;
 		flex-direction: column;
 	}
@@ -152,14 +152,14 @@
 	.dialpad-header h3 {
 		margin: 0;
 		font-size: 1.25rem;
-		color: #333;
+		color: #ffffff;
 	}
 
 	.close-btn {
 		background: none;
 		border: none;
 		font-size: 1.75rem;
-		color: #666;
+		color: #e0e0e0;
 		cursor: pointer;
 		padding: 0;
 		width: 32px;
@@ -172,11 +172,11 @@
 	}
 
 	.close-btn:hover {
-		background-color: #f0f0f0;
+		background-color: #4a4a4a;
 	}
 
 	.dialpad-display {
-		background: #f5f5f5;
+		background: #2a2a2a;
 		border-radius: 8px;
 		padding: 1rem;
 		text-align: center;
@@ -192,12 +192,12 @@
 	.display-value {
 		font-size: 2.5rem;
 		font-weight: bold;
-		color: #333;
+		color: #ffffff;
 	}
 
 	.unit {
 		font-size: 1.75rem;
-		color: #666;
+		color: #e0e0e0;
 	}
 
 	.dialpad-content {
@@ -218,12 +218,12 @@
 
 	.dialpad-btn {
 		aspect-ratio: 1;
-		border: 2px solid #ddd;
+		border: 2px solid #555;
 		border-radius: 12px;
 		font-size: 1.25rem;
 		font-weight: 600;
-		background: white;
-		color: #333;
+		background: #2a2a2a;
+		color: #ffffff;
 		cursor: pointer;
 		transition: all 0.2s;
 		touch-action: manipulation;
@@ -304,7 +304,7 @@
 	.dialpad-range {
 		text-align: center;
 		font-size: 0.875rem;
-		color: #666;
+		color: #a0a0a0;
 		flex-shrink: 0;
 	}
 

@@ -37,11 +37,11 @@
 		display: flex;
 		justify-content: space-between;
 		font-size: 0.875rem;
-		color: #666;
+		color: #a0a0a0;
 		margin-top: 0.25rem;
 	}
 	
 	label strong {
-		color: #333;
+		color: #ffffff;
 	}
 </style>

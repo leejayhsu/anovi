@@ -35,6 +35,8 @@
 		padding: 0.1rem 2rem;
 		position: sticky;
 		top: 0;
+		background: #2a2a2a;
+		z-index: 10;
 	}
 	.header-content {
 		margin: 0 auto;
@@ -49,7 +51,7 @@
 	.logo {
 		font-size: 1rem;
 		font-weight: 600;
-		color: #333;
+		color: #ffffff;
 		text-decoration: none;
 		font-family:
 			system-ui,
@@ -60,7 +62,7 @@
 	.settings-link {
 		border-radius: 6px;
 		text-decoration: none;
-		color: #666;
+		color: #e0e0e0;
 		font-size: 0.95rem;
 		transition: all 0.2s;
 		touch-action: manipulation;
@@ -75,8 +77,8 @@
 	}
 
 	.settings-link:hover {
-		background: #f0f0f0;
-		color: #333;
+		background: #3a3a3a;
+		color: #ffffff;
 	}
 
 	.settings-link.active {

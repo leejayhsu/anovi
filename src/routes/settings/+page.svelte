@@ -214,12 +214,12 @@
 		align-items: center;
 		margin-bottom: 2rem;
 		padding-bottom: 1rem;
-		border-bottom: 2px solid #e0e0e0;
+		border-bottom: 2px solid #4a4a4a;
 	}
 
 	h1 {
 		margin: 0;
-		color: #333;
+		color: #ffffff;
 	}
 
 	.main-content {
@@ -229,18 +229,18 @@
 	}
 
 	.card {
-		background: white;
-		border: 1px solid #e0e0e0;
+		background: #3a3a3a;
+		border: 1px solid #4a4a4a;
 		border-radius: 8px;
 		padding: 1.5rem;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 	}
 
 	.card h2 {
 		margin-top: 0;
 		margin-bottom: 1rem;
 		font-size: 1.25rem;
-		color: #333;
+		color: #ffffff;
 	}
 
 	.form-group {
@@ -251,7 +251,7 @@
 		display: block;
 		margin-bottom: 0.5rem;
 		font-weight: 500;
-		color: #555;
+		color: #e0e0e0;
 	}
 
 	.form-group input[type='text'],
@@ -259,15 +259,17 @@
 	.form-group select {
 		width: 100%;
 		padding: 0.5rem;
-		border: 1px solid #ddd;
+		border: 1px solid #555;
 		border-radius: 4px;
 		font-size: 1rem;
+		background: #2a2a2a;
+		color: #ffffff;
 	}
 
 	.helper-text {
 		display: block;
 		font-size: 0.875rem;
-		color: #666;
+		color: #a0a0a0;
 		margin-top: 0.25rem;
 	}
 
@@ -324,23 +326,24 @@
 
 	.env-token-notice {
 		padding: 1rem;
-		background: #e7f3ff;
-		border: 1px solid #b3d9ff;
+		background: #1a3d5c;
+		border: 1px solid #2d5a7b;
 		border-radius: 4px;
 	}
 
 	.info-message {
 		margin: 0 0 0.5rem 0;
-		color: #004085;
+		color: #a3cfff;
 		font-weight: 500;
 	}
 
 	.info-message code {
-		background: #fff;
+		background: #2a2a2a;
 		padding: 0.125rem 0.25rem;
 		border-radius: 3px;
 		font-family: 'Monaco', 'Courier New', monospace;
 		font-size: 0.9em;
+		color: #e0e0e0;
 	}
 
 	@media (max-width: 768px) {

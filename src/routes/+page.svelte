@@ -401,7 +401,7 @@
 
 	.divider {
 		height: 1px;
-		background: #e5e5e5;
+		background: #4a4a4a;
 		margin: 1.5rem 0;
 	}
 

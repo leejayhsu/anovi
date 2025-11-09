@@ -1,17 +1,17 @@
 /* Card Styles */
 .card {
-	background: white;
-	border: 1px solid #e0e0e0;
+	background: #3a3a3a;
+	border: 1px solid #4a4a4a;
 	border-radius: 8px;
 	padding: 1.5rem;
-	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
+	box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 }
 
 .card h2 {
 	margin-top: 0;
 	margin-bottom: 1rem;
 	font-size: 1.25rem;
-	color: #333;
+	color: #ffffff;
 }
 
 /* Form Styles */
@@ -23,7 +23,7 @@
 	display: block;
 	margin-bottom: 0.5rem;
 	font-weight: 500;
-	color: #555;
+	color: #e0e0e0;
 }
 
 .form-group input[type='text'],
@@ -31,9 +31,11 @@
 .form-group select {
 	width: 100%;
 	padding: 0.5rem;
-	border: 1px solid #ddd;
+	border: 1px solid #555;
 	border-radius: 4px;
 	font-size: 1rem;
+	background: #2a2a2a;
+	color: #ffffff;
 }
 
 .form-group input[type='range'] {
@@ -63,10 +65,10 @@
 .toggle-button {
 	flex: 1;
 	padding: 1rem;
-	border: 2px solid #ddd;
+	border: 2px solid #555;
 	border-radius: 8px;
-	background: white;
-	color: #333;
+	background: #2a2a2a;
+	color: #ffffff;
 	font-size: 1rem;
 	font-weight: 500;
 	cursor: pointer;
@@ -83,11 +85,11 @@
 	background: #007bff;
 	color: white;
 	border-color: #007bff;
-	box-shadow: 0 2px 8px rgba(0, 123, 255, 0.3);
+	box-shadow: 0 2px 8px rgba(0, 123, 255, 0.5);
 }
 
 .toggle-button:not(.active):hover {
-	background: #f8f9fa;
+	background: #3a3a3a;
 	border-color: #007bff;
 }
 
@@ -137,7 +139,7 @@
 .helper-text {
 	display: block;
 	font-size: 0.875rem;
-	color: #666;
+	color: #a0a0a0;
 	margin-top: 0.25rem;
 }
 
@@ -214,15 +216,15 @@ button:active {
 }
 
 .loading-state {
-	color: #666;
+	color: #a0a0a0;
 	font-style: italic;
 	text-align: center;
 	padding: 1rem 0;
 }
 
 .connection-warning {
-	background-color: #fff3cd;
-	border-color: #ffc107;
+	background-color: #664d03;
+	border-color: #997404;
 }
 
 .connection-warning .error {
@@ -239,8 +241,8 @@ button:active {
 .state-section-header {
 	margin-top: 0.75rem;
 	padding: 0.5rem 0 0.25rem 0;
-	border-top: 2px solid #e0e0e0;
-	color: #007bff;
+	border-top: 2px solid #4a4a4a;
+	color: #4da6ff;
 	font-size: 0.95rem;
 	display: flex;
 	justify-content: space-between;
@@ -267,7 +269,7 @@ button:active {
 	justify-content: space-between;
 	align-items: center;
 	padding: 0.5rem 0;
-	border-bottom: 1px solid #f0f0f0;
+	border-bottom: 1px solid #4a4a4a;
 }
 
 .state-row:last-child {
@@ -276,19 +278,19 @@ button:active {
 
 .state-label {
 	font-weight: 600;
-	color: #555;
+	color: #e0e0e0;
 	font-size: 0.9rem;
 }
 
 .state-value {
 	font-weight: 500;
-	color: #333;
+	color: #ffffff;
 	text-align: right;
 }
 
 .state-value.temperature {
 	font-size: 1.125rem;
-	color: #007bff;
+	color: #4da6ff;
 	font-weight: 600;
 }
 
@@ -301,8 +303,8 @@ button:active {
 
 .state-value.status-idle,
 .state-value.status-off {
-	background-color: #e0e0e0;
-	color: #666;
+	background-color: #555;
+	color: #e0e0e0;
 }
 
 .state-value.status-cooking,
@@ -313,18 +315,18 @@ button:active {
 
 .state-value.status-preheating {
 	background-color: #ffc107;
-	color: #333;
+	color: #000;
 }
 
 .last-update {
 	margin-top: 0.5rem;
 	padding-top: 0.75rem;
-	border-top: 2px solid #e0e0e0;
+	border-top: 2px solid #4a4a4a;
 }
 
 .last-update .state-label,
 .last-update .state-value {
 	font-size: 0.8rem;
-	color: #888;
+	color: #999;
 	font-weight: 400;
 }

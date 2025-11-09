@@ -84,7 +84,7 @@
 <style>
 	.icon-button {
 		background: none;
-		border: 2px solid var(--border-color, #ccc);
+		border: 2px solid #555;
 		border-radius: 8px;
 		padding: 8px;
 		cursor: pointer;
@@ -92,16 +92,16 @@
 		align-items: center;
 		justify-content: center;
 		transition: all 0.2s ease;
-		color: var(--text-secondary, #666);
+		color: #e0e0e0;
 	}
 
 	.icon-button:hover {
-		background: var(--hover-bg, #f0f0f0);
+		background: #3a3a3a;
 	}
 
 	.icon-button.active {
-		background: var(--primary-color, #007bff);
-		border-color: var(--primary-color, #007bff);
+		background: #007bff;
+		border-color: #007bff;
 		color: white;
 	}
 
@@ -115,7 +115,7 @@
 	}
 
 	.temperature-button:disabled .temperature-value {
-		color: var(--text-secondary, #999);
+		color: #999;
 	}
 
 	.toggle-button:disabled {

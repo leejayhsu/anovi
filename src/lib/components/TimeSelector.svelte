@@ -104,12 +104,12 @@
 	}
 
 	.time-selector-container {
-		background: white;
+		background: #3a3a3a;
 		border-radius: 16px;
 		padding: 1.5rem;
 		width: 100%;
 		max-width: 500px;
-		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.3);
+		box-shadow: 0 8px 32px rgba(0, 0, 0, 0.5);
 	}
 
 	.time-selector-header {
@@ -122,14 +122,14 @@
 	.time-selector-header h3 {
 		margin: 0;
 		font-size: 1.5rem;
-		color: #333;
+		color: #ffffff;
 	}
 
 	.close-btn {
 		background: none;
 		border: none;
 		font-size: 2rem;
-		color: #666;
+		color: #e0e0e0;
 		cursor: pointer;
 		padding: 0;
 		width: 32px;
@@ -142,7 +142,7 @@
 	}
 
 	.close-btn:hover {
-		background-color: #f0f0f0;
+		background-color: #4a4a4a;
 	}
 
 	.time-selector-content {
@@ -163,10 +163,10 @@
 	.arrow-btn {
 		width: 100%;
 		padding: 1rem;
-		border: 2px solid #ddd;
+		border: 2px solid #555;
 		border-radius: 8px;
-		background: white;
-		color: #333;
+		background: #2a2a2a;
+		color: #ffffff;
 		font-size: 1.5rem;
 		cursor: pointer;
 		transition: all 0.2s;
@@ -187,7 +187,7 @@
 	.time-value {
 		font-size: 3rem;
 		font-weight: bold;
-		color: #333;
+		color: #ffffff;
 		min-height: 60px;
 		display: flex;
 		align-items: center;
@@ -196,20 +196,20 @@
 
 	.time-label {
 		font-size: 0.875rem;
-		color: #666;
+		color: #a0a0a0;
 		text-transform: uppercase;
 		letter-spacing: 0.5px;
 	}
 
 	.time-selector-display {
-		background: #f5f5f5;
+		background: #2a2a2a;
 		border-radius: 8px;
 		padding: 1rem;
 		text-align: center;
 		margin-bottom: 1.5rem;
 		font-size: 2rem;
 		font-weight: 600;
-		color: #333;
+		color: #ffffff;
 		font-variant-numeric: tabular-nums;
 	}
 
