@@ -104,14 +104,55 @@
 		flex: none;
 	}
 
-	.orange-gradient {
-		background: linear-gradient(135deg, #ee7f35 0%, #dc3e12 100%) !important;
+	/* this one looks more like pulsing*/
+	/* .orange-gradient {
+		background: linear-gradient(135deg, #ee7f35, #f75b1e, #dc3e12);
+		background-size: 400% 400%;
+		animation: gradient-shift 3s ease infinite;
 		border: none !important;
-		box-shadow: 0 4px 12px rgba(255, 107, 53, 0.3) !important;
 	}
 
-	.orange-gradient:active {
-		box-shadow: 0 2px 8px rgba(255, 107, 53, 0.4) !important;
+	@keyframes gradient-shift {
+		0% {
+			background-position: 0% 50%;
+		}
+		25% {
+			background-position: 50% 100%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		75% {
+			background-position: 50% 0%;
+		}
+		100% {
+			background-position: 0% 50%;
+		}
+	} */
+
+	.orange-gradient {
+		background: linear-gradient(135deg, #ee7f35, #dc3e12, #f7931e);
+		background-size: 400% 400%;
+		animation: gradient-shift 8s ease infinite;
+		border: none !important;
+	}
+
+	@keyframes gradient-shift {
+		0% {
+			background-position: 0% 50%;
+		}
+		25% {
+			background-position: 50% 100%;
+		}
+		50% {
+			background-position: 100% 50%;
+		}
+		75% {
+			background-position: 50% 0%;
+		}
+		100% {
+			background-position: 0% 50%;
+		}
 	}
 
 	.temperature-button {

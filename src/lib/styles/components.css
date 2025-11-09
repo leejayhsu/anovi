@@ -118,12 +118,12 @@
 	transition: all 0.2s;
 	touch-action: manipulation;
 	min-height: 80px;
-	box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3);
+	/* box-shadow: 0 4px 12px rgba(0, 123, 255, 0.3); */
 }
 
 .temperature-button:active {
 	transform: scale(0.98);
-	box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4);
+	/* box-shadow: 0 2px 8px rgba(0, 123, 255, 0.4); */
 }
 
 .temperature-value {
