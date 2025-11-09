@@ -1,6 +1,15 @@
 - use conventional commits for commit messages and PR titles.
 - use modern version of docker compose syntax: i.e. `docker compose up` instead of `docker-compose up`
 
+# Application notes
+
+## Web Framework
+- this project uses Sveltekit, and Svelte 5.
+- this project uses sqlite as the database.
+- always consult the svelte mcp for specific guidance on svelte 5 best practices.
+- server functionality should be minimized. Prompt me if you are about to do server side functionality.
+
+
 # Anova specific notes
 ## Commands
 - Timer values are in seconds
