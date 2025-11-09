@@ -34,9 +34,9 @@
 			{/if}
 
 			<!-- Temperature Bulbs - Always show both dry and wet -->
-			{#if deviceState.nodes?.temperatureBulbs}
+			{#if deviceState.state.mode === 'cook'}
 				<!-- Dry Bulb Temperature -->
-				{#if deviceState.nodes.temperatureBulbs.dry?.current}
+				{#if deviceState.nodes.temperatureBulbs.mode === 'dry'}
 					<div class="state-section-header">
 						<strong>Dry Bulb Temperature</strong>
 						{#if deviceState.nodes.temperatureBulbs.mode === 'dry'}
@@ -47,9 +47,9 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.dry.current.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(
+							{deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(
 								1
-							)}°F)
+							)}°F
 						</span>
 					</div>
 
@@ -57,16 +57,16 @@
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.dry.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(
+								{deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(
 									1
-								)}°F)
+								)}°F
 							</span>
 						</div>
 					{/if}
 				{/if}
 
 				<!-- Wet Bulb Temperature -->
-				{#if deviceState.nodes.temperatureBulbs.wet?.current}
+				{#if deviceState.nodes.temperatureBulbs.mode === 'wet'}
 					<div class="state-section-header">
 						<strong>Wet Bulb Temperature</strong>
 						{#if deviceState.nodes.temperatureBulbs.mode === 'wet'}
@@ -77,9 +77,9 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.wet.current.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(
+							{deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(
 								1
-							)}°F)
+							)}°F
 						</span>
 					</div>
 
@@ -87,9 +87,9 @@
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.wet.setpoint.celsius.toFixed(1)}°C ({deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(
+								{deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(
 									1
-								)}°F)
+								)}°F
 							</span>
 						</div>
 					{/if}
@@ -97,7 +97,7 @@
 			{/if}
 
 			<!-- Humidity -->
-			{#if deviceState.nodes?.steamGenerators?.relativeHumidity?.current !== undefined}
+			{#if deviceState.state.mode === 'cook'}
 				<div class="state-section-header">
 					<strong>Humidity</strong>
 					{#if deviceState.nodes.steamGenerators.mode !== 'idle'}
@@ -123,7 +123,7 @@
 			{/if}
 
 			<!-- Temperature Probe -->
-			{#if deviceState.nodes?.temperatureProbe?.connected}
+			{#if deviceState.state.mode === 'cook'}
 				<div class="state-section-header">
 					<strong>Temperature Probe</strong>
 				</div>

@@ -66,7 +66,7 @@ export interface SystemInfo {
 }
 
 export interface OvenState {
-	mode: string; // 'idle', 'cook', etc.
+	mode: 'idle' | 'cook';
 	temperatureUnit: 'F' | 'C';
 	processedCommandIds: string[];
 }
