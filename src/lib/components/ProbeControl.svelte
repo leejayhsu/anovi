@@ -25,7 +25,7 @@
 	let showProbeDialpad = $state(false);
 </script>
 
-<div class="probe-control">
+<div>
 	<div class="header">
 		<h3>Probe</h3>
 		<button
@@ -38,7 +38,7 @@
 			<Thermometer size={24} />
 		</button>
 	</div>
-	<div class="form-group">
+	<div>
 		<button
 			id="probe-setpoint-button"
 			type="button"

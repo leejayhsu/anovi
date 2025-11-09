@@ -10,7 +10,7 @@
 	let displayMode = $derived(steamSetpoint === 0 ? 'Idle' : `${steamSetpoint}%`);
 </script>
 
-<div class="steam-control">
+<div>
 	<h3>Steam</h3>
 	<div class="form-group">
 		<label for="steam-setpoint">
