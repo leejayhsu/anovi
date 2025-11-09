@@ -19,6 +19,20 @@
 	}
 </script>
 
+<style>
+	.state-row {
+		border-bottom: none;
+	}
+
+	.state-section-header {
+		border-top: none;
+	}
+
+	.last-update {
+		border-top: none;
+	}
+</style>
+
 {#if deviceState}
 	<section class="card">
 		<h2>Current State</h2>
