@@ -39,7 +39,6 @@
 		</button>
 	</div>
 	<div class="form-group">
-		<label for="probe-setpoint-button">Probe Setpoint</label>
 		<button
 			id="probe-setpoint-button"
 			type="button"
