@@ -31,6 +31,11 @@
 {@render children()}
 
 <style>
+	.header {
+		padding: 0.1rem 2rem;
+		position: sticky;
+		top: 0;
+	}
 	.header-content {
 		margin: 0 auto;
 		display: flex;
@@ -53,7 +58,6 @@
 	}
 
 	.settings-link {
-		padding: 0.375rem 0.875rem;
 		border-radius: 6px;
 		text-decoration: none;
 		color: #666;
