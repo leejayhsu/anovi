@@ -86,7 +86,7 @@ export interface OvenNodes {
 }
 
 export interface TemperatureBulbs {
-	mode: string; // 'dry', 'wet', etc.
+	mode: 'dry' | 'wet'; // use this to determine if we are in normal or sous-vide cook mode
 	wet: WetBulb;
 	dry: DryBulb;
 	dryTop: DryTopBottom;
@@ -129,7 +129,7 @@ export interface TemperatureProbe {
 }
 
 export interface SteamGenerators {
-	mode: string; // 'idle', 'active', etc.
+	mode: 'idle' | 'relative-humidity' | 'steam-percentage';
 	relativeHumidity: RelativeHumidity;
 	evaporator: Evaporator;
 	boiler: Boiler;

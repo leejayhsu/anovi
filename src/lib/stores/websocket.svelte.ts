@@ -60,6 +60,7 @@ function createWebSocketStore() {
 					deviceState: payload.state
 				}));
 				console.log(`[WebSocket] State update for device ${deviceId}`);
+				// console.log(JSON.stringify(payload.state, null, 2));
 			}
 		}
 	}
