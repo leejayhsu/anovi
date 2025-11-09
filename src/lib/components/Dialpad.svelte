@@ -237,24 +237,26 @@
 	}
 
 	.clear-btn {
-		background: #ffc107;
+		background: linear-gradient(135deg, #f5da6f 0%, #ea8c00 100%) !important;
 		color: white;
-		border-color: #ffc107;
+		border: none !important;
 	}
 
 	.clear-btn:active {
-		background: #e0a800;
+		background: linear-gradient(135deg, #957d26 0%, #a15101 100%) !important;
+		transform: scale(0.95);
 	}
 
 	.backspace-btn {
-		background: #dc3545;
+		background: linear-gradient(135deg, #f96b6b 0%, #c62828 100%) !important;
 		color: white;
-		border-color: #dc3545;
+		border: none !important;
 		font-size: 1.25rem;
 	}
 
 	.backspace-btn:active {
-		background: #c82333;
+		background: linear-gradient(135deg, #9f4444 0%, #621414 100%) !important;
+		transform: scale(0.95);
 	}
 
 	.dialpad-actions {
@@ -282,22 +284,24 @@
 	}
 
 	.cancel-btn {
-		background: #6c757d;
+		background: linear-gradient(135deg, #9dabba 0%, #41474c 100%) !important;
 		color: white;
+		border: none !important;
 	}
 
 	.cancel-btn:active {
-		background: #5a6268;
+		background: linear-gradient(135deg, #505860 0%, #0c0d0e 100%) !important;
 		transform: scale(0.98);
 	}
 
 	.done-btn {
-		background: #28a745;
+		background: linear-gradient(135deg, #39e261 0%, #155a25 100%) !important;
 		color: white;
+		border: none !important;
 	}
 
 	.done-btn:active {
-		background: #218838;
+		background: linear-gradient(135deg, #1c7631 0%, #0e3918 100%) !important;
 		transform: scale(0.98);
 	}
 
