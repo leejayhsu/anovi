@@ -31,18 +31,7 @@
 {@render children()}
 
 <style>
-	.header {
-		background: white;
-		border-bottom: 2px solid #e0e0e0;
-		padding: 0.5rem 2rem;
-		position: sticky;
-		top: 0;
-		z-index: 100;
-		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.1);
-	}
-
 	.header-content {
-		max-width: 1200px;
 		margin: 0 auto;
 		display: flex;
 		justify-content: space-between;
@@ -52,9 +41,8 @@
 			-apple-system,
 			sans-serif;
 	}
-
 	.logo {
-		font-size: 1.1rem;
+		font-size: 1rem;
 		font-weight: 600;
 		color: #333;
 		text-decoration: none;
@@ -62,12 +50,6 @@
 			system-ui,
 			-apple-system,
 			sans-serif;
-	}
-
-	.header-right {
-		display: flex;
-		align-items: center;
-		gap: 1rem;
 	}
 
 	.settings-link {
@@ -96,15 +78,5 @@
 	.settings-link.active {
 		background: #007bff;
 		color: white;
-	}
-
-	@media (max-width: 768px) {
-		.header {
-			padding: 0.5rem 1rem;
-		}
-
-		.logo {
-			font-size: 1rem;
-		}
 	}
 </style>
