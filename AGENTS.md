@@ -4,14 +4,16 @@
 # Application notes
 
 ## Web Framework
+
 - this project uses Sveltekit, and Svelte 5.
 - this project uses sqlite as the database.
 - always consult the svelte mcp for specific guidance on svelte 5 best practices.
 - server functionality should be minimized. Prompt me if you are about to do server side functionality.
 
-
 # Anova specific notes
+
 ## Commands
+
 - Timer values are in seconds
 - Temperature values should include both Celsius and Fahrenheit for Oven v1 compatibility, but Fahrenheit is optional for Oven v2
 - Device ID is obtained from WebSocket connection messages

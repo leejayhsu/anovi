@@ -69,6 +69,17 @@
 	</div>
 </div>
 
+{#if showTemperatureDialpad}
+	<Dialpad
+		value={displayTemperature}
+		min={dialpadMin}
+		max={dialpadMax}
+		unit={temperatureUnit === 'C' ? '°C' : '°F'}
+		onChange={onTemperatureChange}
+		onClose={() => (showTemperatureDialpad = false)}
+	/>
+{/if}
+
 <style>
 	.header {
 		display: flex;
@@ -121,14 +132,3 @@
 		opacity: 0.9;
 	}
 </style>
-
-{#if showTemperatureDialpad}
-	<Dialpad
-		value={displayTemperature}
-		min={dialpadMin}
-		max={dialpadMax}
-		unit={temperatureUnit === 'C' ? '°C' : '°F'}
-		onChange={onTemperatureChange}
-		onClose={() => (showTemperatureDialpad = false)}
-	/>
-{/if}

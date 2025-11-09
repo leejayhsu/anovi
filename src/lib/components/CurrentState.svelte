@@ -19,20 +19,6 @@
 	}
 </script>
 
-<style>
-	.state-row {
-		border-bottom: none;
-	}
-
-	.state-section-header {
-		border-top: none;
-	}
-
-	.last-update {
-		border-top: none;
-	}
-</style>
-
 {#if deviceState}
 	<section class="card">
 		<h2>Current State</h2>
@@ -61,9 +47,7 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(
-								1
-							)}°F
+							{deviceState.nodes.temperatureBulbs.dry.current.fahrenheit.toFixed(1)}°F
 						</span>
 					</div>
 
@@ -71,9 +55,7 @@
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(
-									1
-								)}°F
+								{deviceState.nodes.temperatureBulbs.dry.setpoint.fahrenheit.toFixed(1)}°F
 							</span>
 						</div>
 					{/if}
@@ -91,9 +73,7 @@
 					<div class="state-row">
 						<span class="state-label">Current:</span>
 						<span class="state-value temperature">
-							{deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(
-								1
-							)}°F
+							{deviceState.nodes.temperatureBulbs.wet.current.fahrenheit.toFixed(1)}°F
 						</span>
 					</div>
 
@@ -101,9 +81,7 @@
 						<div class="state-row">
 							<span class="state-label">Setpoint:</span>
 							<span class="state-value">
-								{deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(
-									1
-								)}°F
+								{deviceState.nodes.temperatureBulbs.wet.setpoint.fahrenheit.toFixed(1)}°F
 							</span>
 						</div>
 					{/if}
@@ -205,3 +183,17 @@
 		<p class="loading-state">Connecting to device...</p>
 	</section>
 {/if}
+
+<style>
+	.state-row {
+		border-bottom: none;
+	}
+
+	.state-section-header {
+		border-top: none;
+	}
+
+	.last-update {
+		border-top: none;
+	}
+</style>

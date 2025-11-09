@@ -5,7 +5,7 @@
 	}
 
 	let { steamSetpoint, onSetpointChange }: Props = $props();
-	
+
 	// Display mode based on setpoint
 	let displayMode = $derived(steamSetpoint === 0 ? 'Idle' : `${steamSetpoint}%`);
 </script>
@@ -40,7 +40,7 @@
 		color: #a0a0a0;
 		margin-top: 0.25rem;
 	}
-	
+
 	label strong {
 		color: #ffffff;
 	}

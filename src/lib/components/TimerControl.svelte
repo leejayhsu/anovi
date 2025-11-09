@@ -32,7 +32,9 @@
 </script>
 
 <section class="card">
-	<div style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;">
+	<div
+		style="display: flex; justify-content: space-between; align-items: center; margin-bottom: 1rem;"
+	>
 		<h2 style="margin: 0;">Timer</h2>
 		<button
 			type="button"
@@ -46,9 +48,9 @@
 	</div>
 	<div class="form-group">
 		<label>Duration</label>
-		<button 
-			type="button" 
-			class="temperature-button" 
+		<button
+			type="button"
+			class="temperature-button"
 			onclick={() => (showTimerSelector = true)}
 			disabled={!timerEnabled}
 		>
@@ -80,6 +82,14 @@
 		</div>
 	</div>
 </section>
+
+{#if showTimerSelector}
+	<TimeSelector
+		value={timerSeconds}
+		onChange={onSecondsChange}
+		onClose={() => (showTimerSelector = false)}
+	/>
+{/if}
 
 <style>
 	.icon-button {
@@ -123,11 +133,3 @@
 		cursor: not-allowed;
 	}
 </style>
-
-{#if showTimerSelector}
-	<TimeSelector
-		value={timerSeconds}
-		onChange={onSecondsChange}
-		onClose={() => (showTimerSelector = false)}
-	/>
-{/if}

@@ -57,6 +57,17 @@
 	</div>
 </div>
 
+{#if showProbeDialpad}
+	<Dialpad
+		value={displayProbeTemperature}
+		min={dialpadMin}
+		max={dialpadMax}
+		unit={temperatureUnit === 'C' ? '°C' : '°F'}
+		onChange={onTemperatureChange}
+		onClose={() => (showProbeDialpad = false)}
+	/>
+{/if}
+
 <style>
 	.header {
 		display: flex;
@@ -134,14 +145,3 @@
 		color: var(--text-secondary, #999);
 	}
 </style>
-
-{#if showProbeDialpad}
-	<Dialpad
-		value={displayProbeTemperature}
-		min={dialpadMin}
-		max={dialpadMax}
-		unit={temperatureUnit === 'C' ? '°C' : '°F'}
-		onChange={onTemperatureChange}
-		onClose={() => (showProbeDialpad = false)}
-	/>
-{/if}

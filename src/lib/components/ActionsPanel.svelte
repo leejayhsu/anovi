@@ -71,7 +71,7 @@
 	</section>
 {/if}
 
-<section class="card actions-card">
+<section class="actions-card">
 	<div class="actions-icons">
 		<span
 			class="action-icon"
@@ -96,6 +96,10 @@
 
 <style>
 	.actions-card {
+		background: #3a3a3a;
+		border: 1px solid #4a4a4a;
+		border-radius: 8px;
+		box-shadow: 0 2px 4px rgba(0, 0, 0, 0.3);
 		padding: 0.75rem;
 	}
 

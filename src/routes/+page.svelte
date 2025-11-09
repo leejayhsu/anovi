@@ -106,18 +106,18 @@
 			},
 			fan: { speed: fanSpeed },
 			vent: { open: ventOpen },
-		rackPosition,
-		stageTransitionType: 'automatic',
-		// Steam control: Only include steamGenerators when humidity is active (>0)
-		// NOTE: The Anova API requires completely omitting the steamGenerators field when idle,
-		// rather than sending { mode: 'idle' }. Sending { mode: 'idle' } breaks the command.
-		...(steamSetpoint > 0 && {
-			steamGenerators: {
-				mode: 'relative-humidity',
-				relativeHumidity: { setpoint: steamSetpoint }
-			}
-		}),
-		...(timerEnabled && {
+			rackPosition,
+			stageTransitionType: 'automatic',
+			// Steam control: Only include steamGenerators when humidity is active (>0)
+			// NOTE: The Anova API requires completely omitting the steamGenerators field when idle,
+			// rather than sending { mode: 'idle' }. Sending { mode: 'idle' } breaks the command.
+			...(steamSetpoint > 0 && {
+				steamGenerators: {
+					mode: 'relative-humidity',
+					relativeHumidity: { setpoint: steamSetpoint }
+				}
+			}),
+			...(timerEnabled && {
 				timer: {
 					initial: timerSeconds,
 					startType: timerStartType
@@ -217,7 +217,6 @@
 		}
 	}
 
-
 	// Handle result change from child components
 	function handleResultChange(result: { success: boolean; error?: string } | null) {
 		lastResult = result;
@@ -284,7 +283,7 @@
 <div class="container">
 	<div class="layout-wrapper">
 		<div class="main-content">
-			<section class="card">
+			<section class="card card-spaced">
 				<TemperatureControl
 					{temperatureMode}
 					{temperatureUnit}
@@ -304,8 +303,6 @@
 					{dialpadMax}
 				/>
 
-				<div class="divider"></div>
-
 				<ProbeControl
 					{probeEnabled}
 					{temperatureUnit}
@@ -317,7 +314,7 @@
 				/>
 			</section>
 
-			<section class="card">
+			<section class="card card-spaced">
 				<HeatingElements
 					{topElement}
 					{bottomElement}
@@ -326,12 +323,7 @@
 					onToggle={toggleHeatingElement}
 				/>
 
-				<div class="divider"></div>
-
-				<SteamControl
-					{steamSetpoint}
-					onSetpointChange={(value) => (steamSetpoint = value)}
-				/>
+				<SteamControl {steamSetpoint} onSetpointChange={(value) => (steamSetpoint = value)} />
 			</section>
 
 			<TimerControl
@@ -376,6 +368,12 @@
 			sans-serif;
 	}
 
+	.card-spaced {
+		display: flex;
+		flex-direction: column;
+		justify-content: space-between;
+	}
+
 	.layout-wrapper {
 		display: flex;
 		gap: 2rem;
@@ -397,12 +395,6 @@
 		display: flex;
 		flex-direction: column;
 		gap: 1.5rem;
-	}
-
-	.divider {
-		height: 1px;
-		background: #4a4a4a;
-		margin: 1.5rem 0;
 	}
 
 	@media (max-width: 1024px) {

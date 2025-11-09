@@ -73,10 +73,10 @@
 			onclick={(e) => e.stopPropagation()}
 			onkeydown={handleContainerKeydown}
 		>
-		<div class="dialpad-header">
-			<h3 id="dialpad-title">Enter Temperature</h3>
-			<button class="close-btn" onclick={handleCancel}>×</button>
-		</div>
+			<div class="dialpad-header">
+				<h3 id="dialpad-title">Enter Temperature</h3>
+				<button class="close-btn" onclick={handleCancel}>×</button>
+			</div>
 
 			<div class="dialpad-display">
 				<span class="display-value">{displayValue || '0'}</span>
