@@ -24,7 +24,7 @@
 
 	// Temperature settings
 	let temperatureMode = $state<'dry' | 'wet'>('dry');
-	let temperatureCelsius = $state(177);
+	let temperatureCelsius = $state(fahrenheitToCelsius(350));
 	let temperatureUnit = $state<'C' | 'F'>(data.temperatureUnit);
 
 	// Update temperature unit when data changes
@@ -51,7 +51,7 @@
 
 	// Probe settings
 	let probeEnabled = $state(false);
-	let probeSetpointCelsius = $state(65);
+	let probeSetpointCelsius = $state(fahrenheitToCelsius(165));
 
 	// Rack position
 	let rackPosition = $state(3);
@@ -290,7 +290,16 @@
 					{temperatureMode}
 					{temperatureUnit}
 					{displayTemperature}
-					onModeChange={(mode) => (temperatureMode = mode)}
+					onModeChange={(mode) => {
+						temperatureMode = mode;
+						if (mode === 'wet') {
+							// Set temperature to 165°F (≈74°C) when switching to wet mode
+							temperatureCelsius = fahrenheitToCelsius(165);
+						} else if (mode === 'dry') {
+							// Set temperature to 350°F (≈177°C) when switching to dry mode
+							temperatureCelsius = fahrenheitToCelsius(350);
+						}
+					}}
 					onTemperatureChange={handleTemperatureChange}
 					{dialpadMin}
 					{dialpadMax}
