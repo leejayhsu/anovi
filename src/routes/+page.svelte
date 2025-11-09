@@ -285,7 +285,6 @@
 	<div class="layout-wrapper">
 		<div class="main-content">
 			<section class="card">
-				<h2>Temperature</h2>
 				<TemperatureControl
 					{temperatureMode}
 					{temperatureUnit}
@@ -319,7 +318,6 @@
 			</section>
 
 			<section class="card">
-				<h2>Heating & Steam</h2>
 				<HeatingElements
 					{topElement}
 					{bottomElement}

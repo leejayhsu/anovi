@@ -27,7 +27,7 @@
 
 <div class="probe-control">
 	<div class="header">
-		<h3>Temperature Probe</h3>
+		<h3>Probe</h3>
 		<button
 			type="button"
 			class="icon-button"

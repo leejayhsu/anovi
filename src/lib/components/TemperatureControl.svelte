@@ -34,7 +34,7 @@
 				class:active={temperatureMode === 'dry'}
 				onclick={() => onModeChange('dry')}
 			>
-				Dry
+				Normal
 			</button>
 			<button
 				type="button"
@@ -42,7 +42,7 @@
 				class:active={temperatureMode === 'wet'}
 				onclick={() => onModeChange('wet')}
 			>
-				Wet
+				Sous-Vide
 			</button>
 		</div>
 	</div>
